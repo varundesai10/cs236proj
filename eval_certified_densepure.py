@@ -24,6 +24,7 @@ from networks import *
 
 IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
+PRETRAINED_CIFAR10_PATH = '/media/nipunagarwala/cs236_project_data/models/cifar10_uncond_50M_500K.pt' #"pretrained/cifar10_uncond_50M_500K.pt"
 
 class DensePure_Certify(nn.Module):
     def __init__(self, args, config):
@@ -65,7 +66,7 @@ class DensePure_Certify(nn.Module):
         if args.diffusion_type == 'guided-ddpm':
             self.runner = GuidedDiffusion(args, config, device=config.device)
         elif args.diffusion_type == 'ddpm':
-            self.runner = Diffusion(args, config, device=config.device)
+            self.runner = Diffusion(args, config, path=PRETRAINED_CIFAR10_PATH, device=config.device)
         else:
             raise NotImplementedError('unknown diffusion type')
 
