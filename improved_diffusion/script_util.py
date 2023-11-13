@@ -8,7 +8,7 @@ from .unet import SuperResModel, UNetModel
 NUM_CLASSES = 1000
 
 
-def model_and_diffusion_defaults(t_total):
+def model_and_diffusion_defaults():
     """
     Defaults for image training.
     """
@@ -23,7 +23,7 @@ def model_and_diffusion_defaults(t_total):
         learn_sigma=True,
         sigma_small=False,
         class_cond=False,
-        diffusion_steps=t_total,
+        diffusion_steps=1000,
         noise_schedule="cosine",
         timestep_respacing="",
         use_kl=False,
