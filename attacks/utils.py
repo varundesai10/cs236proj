@@ -12,7 +12,7 @@ def load_yaml_file(file_path):
             print(f"Error loading YAML file {file_path}: {e}")
             return None
         
-def save_attacks(directory_path, attack_name, x, y):
+def save_attack_samples(directory_path, attack_name, x, y):
     file_name = os.path.join(directory_path, attack_name)
     if '.hdf5' not in file_name:
         file_name += '.hdf5'
