@@ -6,8 +6,6 @@ from art.attacks.evasion import CarliniL2Method, BoundaryAttack, DeepFool, \
                         FastGradientMethod, ProjectedGradientDescentPyTorch, \
                         SaliencyMapMethod, VirtualAdversarialMethod, Wasserstein
 
-
-
 def instantiate_carlini_l2_attack(clf, confidence: float, targeted: bool = True, 
                         learning_rate:float = 0.01, 
                         binary_search_steps: int = 10,
@@ -28,9 +26,9 @@ def instantiate_deep_fool_attack(clf, max_iter=100, epsilon=1e-6, nb_grads=10, b
 def instantiate_fsgm_attack(clf,  norm: Union[int, float,str]='inf', 
                     eps: Union[int, float, np.ndarray] = 0.3, 
                     eps_step: Union[int, float, np.ndarray] = 0.1, 
-                    targeted: bool = False, 
+                    targeted: bool = True, 
                     num_random_init: int = 0, batch_size: int = 32):
-    att = FastGradientMethod(clf, norm, eps_step, targeted, num_random_init, batch_size)
+    att = FastGradientMethod(clf, norm, eps, eps_step, targeted, num_random_init, batch_size)
     return att
 
 
@@ -38,7 +36,7 @@ def instantiate_pgm_attack(clf, norm: Union[int,float,str] = 'inf',
                 eps: Union[int, float, np.ndarray] = 0.3, 
                 eps_step: Union[int, float, np.ndarray] = 0.1, 
                 decay: Union[float, None] = None, max_iter: int = 100, 
-                targeted: bool = False, num_random_init: int = 0, 
+                targeted: bool = True, num_random_init: int = 0, 
                 batch_size: int = 32):
     att = ProjectedGradientDescentPyTorch(clf, norm, eps, eps_step, decay, 
                             max_iter, targeted, num_random_init, batch_size)
@@ -59,12 +57,12 @@ def instantiate_virtual_adv_attack(clf, max_iter: int = 10,
     return att
 
 
-def instantiate_wasserstein_attack(clf, targeted: bool = False, regularization: float = 3000.0, 
+def instantiate_wasserstein_attack(clf, targeted: bool = True, regularization: float = 3000.0, 
                                 p: int = 2, kernel_size: int = 5, eps_step: float = 0.1, 
                                 norm: str = 'wasserstein', ball: str = 'wasserstein', 
                                 eps: float = 0.3, eps_iter: int = 10, eps_factor: float = 1.1, 
                                 max_iter: int = 400, conjugate_sinkhorn_max_iter: int = 400, 
-                                projected_sinkhorn_max_iter: int = 400, batch_size: int = 1, 
+                                projected_sinkhorn_max_iter: int = 400, batch_size: int = 1
                             ):
 
     att = Wasserstein(clf, targeted, regularization, p, kernel_size, eps_step,

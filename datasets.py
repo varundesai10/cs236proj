@@ -15,7 +15,7 @@ IMAGENET_DIR = "/home/datasets/imagenet"
 
 # list of all datasets
 DATASETS = ["imagenet", "imagenet32", "cifar10"]
-
+CIFAR10_DATASET_PATH = '/media/nipunagarwala/cs236_project_data/dataset/'
 
 def get_dataset(dataset: str, split: str) -> Dataset:
     """Return the dataset as a PyTorch Dataset object"""
@@ -63,7 +63,7 @@ _CIFAR10_STDDEV = [0.2023, 0.1994, 0.2010]
 
 
 def _cifar10(split: str) -> Dataset:
-    dataset_path = os.path.join('datasets', 'dataset_cache')
+    dataset_path = CIFAR10_DATASET_PATH # os.path.join('datasets', 'dataset_cache')
     if split == "train":
         return datasets.CIFAR10(dataset_path, train=True, download=True, transform=transforms.Compose([
             transforms.RandomCrop(32, padding=4),

@@ -1,41 +1,34 @@
 import torch
-from typing import Union, List
-import h5py
+import torch.nn as nn
+import torch.optim as optim
+import numpy as np
+from attack_generator import AttackGenerator
 
-from attacks import ATTACKS
+from art.estimators.classification import PyTorchClassifier
 
+def generate_attacks(model, data_loader, target_class, attack_list, 
+                     input_shape, num_classes, 
+                     attack_config_dict,  min_pixel_value=-1.0,
+                    max_pixel_value=1.0):
 
-class AttackRunner(object):
-    def __init__(self, clf, num_samples: int, target_class: Union[list, int, str], 
-                 attack_list: list, attack_config_dict: dict, file_name: str):
-        self.clf = clf
-        self.num_samples = num_samples
-        self.target_class = target_class
-        self.attack_config  = attack_config_dict
-        self.attack_instance_dict = {}
-        self.attack_list = attack_list
-        self.file_name = file_name
-
-        self._init_attack_matrix()
-
-    def _init_attack_matrix(self):
-        for attack_name in self.attack_list:
-            self.attack_instance_dict[attack_name] = ATTACKS[attack_name](**self.attack_config[attack_name])
-
-    def generate_attack(self, x: torch.Tensor, y: torch.Tensor, save_samples: bool=True) -> dict:
-        attack_samples_dict = {}
-        for attack_name in self.attack_list:
-            attack_samples_dict[attack_name] = self.attack_instance_dict[attack_name].generate(x,y)
-        if save_samples:
-            self.save_attacks(attack_samples_dict)
-        return attack_samples_dict
+    x_adv_dict = None
+    criterion = nn.CrossEntropyLoss()
+    clf = PyTorchClassifier(model=model, clip_values=(min_pixel_value, max_pixel_value), 
+                            loss=criterion,input_shape=input_shape, nb_classes=num_classes)
+    attack_runer = AttackGenerator(clf, target_class=target_class,attack_list= attack_list,
+                                    attack_config_dict=attack_config_dict)
     
-    def save_attacks(self, attack_dataset_dict: dict):
-        #TODO: Add if filename does not have the .h5 extension (in other words, add a check for this)
-        with h5py.File(self.file_name, 'w') as f:
-                # Create a dataset and write data to it
-                for attack_name in attack_dataset_dict:
-                    f.create_dataset(attack_name, data=attack_dataset_dict[attack_name])
+    for d in data_loader:
+        x , y = d[0], d[1]
+        b = y == target_class
+        idx = b.nonzero()
+        x , y = x[idx,:,:,:].squeeze(1), y[idx]
 
-
-    
+        x_adv_i = attack_runer.generate_attack(x.numpy(), y=None)
+        if x_adv_dict is None:
+            x_adv_dict = x_adv_i
+        else:
+            for key in x_adv_dict.keys() | x_adv_i.keys():
+                x_adv_dict[key] = np.concatenate([x_adv_dict.get(key, np.array([])), 
+                                                  x_adv_i.get(key, np.array([]))])
+    return x_adv_dict
