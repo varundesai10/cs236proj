@@ -1,6 +1,6 @@
 carlini_l2:
   confidence: 0.0
-  learning_rate: 0.01
+  learning_rate: 0.1
   binary_search_steps: 10
   max_iter: 10
   targeted: false

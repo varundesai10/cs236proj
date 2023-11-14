@@ -1,7 +1,5 @@
 import torch
 from typing import Union, List
-import h5py
-
 from attacks import ATTACKS
 
 class AttackGenerator(object):
