@@ -2,6 +2,7 @@ import yaml
 import h5py
 
 import os
+from datetime import datetime
 
 def load_yaml_file(file_path):
     with open(file_path, 'r') as file:
@@ -20,3 +21,9 @@ def save_attack_samples(directory_path, attack_name, x, y):
         f.create_dataset('x', data=x)
         f.create_dataset('y', data=y)
 
+def get_timestamp_id():
+    current_datetime = datetime.now()
+    timestamp = current_datetime.timestamp()
+    datetime_object = datetime.utcfromtimestamp(timestamp)
+    id = datetime_object.strftime('%Y%m%d%H%M%S')
+    return id

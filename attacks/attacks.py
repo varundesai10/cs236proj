@@ -31,7 +31,6 @@ def instantiate_fsgm_attack(clf,  norm: Union[int, float,str]='inf',
     att = FastGradientMethod(clf, norm, eps, eps_step, targeted, num_random_init, batch_size)
     return att
 
-
 def instantiate_pgm_attack(clf, norm: Union[int,float,str] = 'inf', 
                 eps: Union[int, float, np.ndarray] = 0.3, 
                 eps_step: Union[int, float, np.ndarray] = 0.1, 

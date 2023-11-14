@@ -4,17 +4,35 @@ import torchvision
 import torchvision.transforms as transforms
 
 import argparse
+import os
 
-from sample_model import load_mnist_model
+from attacks.mnist_model import load_mnist_model
 from attack_generator import generate_attacks
-from utils import load_yaml_file
+from attack_utils import load_yaml_file, get_timestamp_id
+from logger import AttackLogger
 
 
-def cifar_params_dict():
-    pass
+ATTACK_LIST = ['carlini_l2', 'boundary', 'fsgm', 'deep_fool', 'pgm', 'jsma', 
+               'virtual_adv', 'wasserstein']
 
-def mnist_params_dict():
-    params = dict(root_directory='../datasets/mnist/',
+def cifar_params_dict(store_path):
+    
+    params = dict(
+            max_pixel_value=1.0,
+            min_pixel_value=-1.0,
+            target_class=None,
+            input_shape=(32,32),
+            num_channels=3,
+            num_classes=10,
+            attack_config_path='./attack_config.yml',
+            batch_size=64,
+            adv_name_file='cifar-10_adv')
+    params['root_dir'] = os.path.join(store_path, 'cifar-10',  params['adv_name_file'])
+    return params
+
+def mnist_params_dict(store_path):
+
+    params = dict(
                 max_pixel_value=1.0,
                 min_pixel_value=-1.0,
                 target_class=None,
@@ -23,31 +41,44 @@ def mnist_params_dict():
                 num_classes=10,
                 attack_config_path='./attack_config.yml',
                 batch_size=64,
-                adv_dir='../mnist_attacks')
-
+                adv_name_file='mnist_adv')
+    params['root_dir'] = os.path.join(store_path, 'mnist',  params['adv_name_file'])
     return params
 
 
 def main(args):
+    os.makedirs('./loggers', exist_ok=True)
+    log = AttackLogger(os.path.join('./loggers', get_timestamp_id()))
+
     if args.dataset == 'mnist':
-        params = mnist_params_dict()
+        params = mnist_params_dict(args.dir)
         transform = transforms.Compose([
         transforms.ToTensor(), 
         transforms.Normalize((0.5,), (0.5,)) ])
         model = load_mnist_model()
-        test_data = torchvision.datasets.MNIST(root=params.root_directory, 
+        test_dataset = torchvision.datasets.MNIST(root=args.dataset, 
                                             train=False, 
                                             download=True, 
                                             transform=transform)
-
-        data_loader = torch.utils.data.DataLoader(dataset=test_data, 
-                                                  batch_size=params.batch_size, 
-                                                  shuffle=False) 
-        
         
     else:
-        data_loader = None
-    
+        model = torch.hub.load("chenyaofo/pytorch-cifar-models", 
+                               "cifar10_resnet20", 
+                               pretrained=True)
+        params = cifar_params_dict(args.dir)
+        transform_test = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        ])
+        test_dataset = torchvision.datasets.CIFAR10(root=args.dataset, 
+                                                    train=False,
+                                                    download=True, 
+                                                    transform=transform_test)
+    data_loader = torch.utils.data.DataLoader(test_dataset, 
+                                                batch_size=params.batch_size, 
+                                                shuffle=True)
+
+    os.makedirs(params['root_dir'], exist_ok=True)
     attack_config_dict=load_yaml_file(args.attack_config_path)
     model.eval()  
     generate_attacks(model, data_loader=data_loader, attack_list=None,
@@ -75,6 +106,9 @@ if __name__ == "__main__":
                         help='number of samples to generate per attack',
                         default=2000
                         )
+    parser.add_argument('-d', '--dir', type=str, 
+                        help='directory path to which attacks should be stored',
+                        default='../datasets/')
 
     args = parser.parse_args()
     main(args)
