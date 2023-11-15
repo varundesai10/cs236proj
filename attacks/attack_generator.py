@@ -8,7 +8,7 @@ from typing import Union
 import logging
 import os
 
-from attack_utils import save_attack_samples, create_and_store_results
+from attack_utils import save_attack_samples, create_and_store_results, plot_samples
 from metrics import compute_distributional_distances
 from dataset import AttackDataset
 from attacks import ATTACKS
@@ -39,9 +39,14 @@ class AttackGenerator(object):
     
 
 def generate_attacks(model, data_loader, attack_list, num_samples,
-                     input_shape, num_classes, target_class: Union[None, int],
-                     attack_config_dict,  min_pixel_value=-1.0, max_pixel_value=1.0,
-                    dir_path= '../datasets', batch_size=64, **kwargs):
+                     input_shape, num_classes, 
+                     target_class: Union[None, int],
+                     attack_config_dict,  min_pixel_value=-1.0, 
+                     max_pixel_value=1.0, 
+                     dir_path= '../datasets', 
+                     batch_size=64, 
+                    visualize_samples=True,
+                    **kwargs):
 
     criterion = nn.CrossEntropyLoss()
     clf = PyTorchClassifier(model=model,
@@ -82,23 +87,37 @@ def generate_attacks(model, data_loader, attack_list, num_samples,
         x_original = np.array(x_original).reshape(-1, *sample_shape)
         y_adv = np.array(y_adv).reshape(-1)
         
-        path_file = save_attack_samples(dir_path, attack_name[0], x_original, x_adv, y)
-        dataset_adv = AttackDataset(path_file, indexes=None, n_classes=num_classes,
-                                x_original_key='x', x_adv_key='x_adv', labels_key='y',
-                                  rescale=False)
-        data_loader_adv = DataLoader(dataset_adv, batch_size=batch_size, shuffle=False)
+        path_file = save_attack_samples(dir_path, attack_name[0], 
+                                        x_original, x_adv, y)
+        dataset_adv = AttackDataset(path_file, indexes=None, 
+                                    n_classes=num_classes, 
+                                    x_original_key='x', 
+                                    x_adv_key='x_adv', 
+                                    labels_key='y',
+                                    rescale=False)
+        data_loader_adv = DataLoader(dataset_adv, 
+                                     batch_size=batch_size, 
+                                     shuffle=False)
         metrics = compute_distributional_distances(data_loader=data_loader_adv,
                                                    clf=model, 
                                                    log_target=kwargs.get('log_target', False),
                                                    clf_log_softmax=kwargs.get('clf_log_softmax', False))
         dataset_name = kwargs.get('dataset', 'Null')
         create_and_store_results(file_path=os.path.join(dir_path),
-                                 file_name=f'metrics_{dataset_name}', metrics=metrics,
-                                  attack_name= attack_name[0], num_samples=num_samples, 
-                                  dataset=dataset_name)
-        
-
-
+                                 file_name=f'metrics_{dataset_name}', 
+                                 metrics=metrics,
+                                 attack_name= attack_name[0], 
+                                 num_samples=num_samples, 
+                                 dataset=dataset_name)
+        if visualize_samples:
+            plot_path = os.path.join(dir_path, 'plots')
+            os.makedirs(plot_path, exist_ok=True)
+            plot_path = os.path.join(plot_path, f'{attack_name[0]}.png')
+            plot_samples(x_original, 
+                         x_adv,title=f'Clean and Peturbed Samples Under \
+                            {attack_name[0].title()} Attack', 
+                         save_path=plot_path)
+            
         logging.info(f'Attackss saved in {dir_path} with filename: {attack_name[0]}')
 
 

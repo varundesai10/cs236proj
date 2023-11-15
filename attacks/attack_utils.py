@@ -53,14 +53,19 @@ def get_hd5_length(file_path, data_key):
 def create_and_store_results(file_path, file_name, metrics: dict, attack_name, num_samples, dataset:str):
     header = ['attack_name', 'measure', 'x_dist', 'x_adv_dist', 'num_samples', 'dataset']
     file_path = os.path.join(file_path, f'{file_name}.txt')
+    print(file_path)
     with open(file_path, 'w+') as file:
         file.write('\t'.join(header) + '\n')
         for key in metrics:
-            row = [attack_name, key, metrics[key]['x'], metrics[key]['x_adv'], num_samples, dataset]
+            print(key)
+            row = [attack_name, key, 
+                   float("{:.5f}".format(metrics[key]['x'])),
+                   float("{:.5f}".format(metrics[key]['x_adv'])), num_samples, 
+                    dataset]
             file.write('\t'.join(map(str, row)) + '\n')
 
 
-def visualize_combined_samples(clean_samples, adversarial_samples, title, save_path):
+def plot_samples(clean_samples, adversarial_samples, title, save_path):
     fig, axes = plt.subplots(nrows=4, ncols=2, figsize=(5,5))
     fig.suptitle(title)
 

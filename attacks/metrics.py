@@ -18,7 +18,7 @@ def compute_wasserstein(y, y_pred, y_adv, u_weight=None, v_weight=None,
 
     if log_target:
         y = np.exp(y)
-    
+    print(y.shape, y_adv.shape, y_pred.shape)
     x = wasserstein_distance(y, y_pred, u_weights=u_weight, v_weights=v_weight)
     x_adv = wasserstein_distance(y, y_adv, u_weights=u_weight, v_weights=v_weight)
 
@@ -27,24 +27,42 @@ def compute_wasserstein(y, y_pred, y_adv, u_weight=None, v_weight=None,
 def compute_jensen_shannon_distance(y, y_pred, y_adv, 
                                     clf_log_softmax:bool = False, 
                                     log_target: bool=False):
-    if isinstance(y, torch.Tensor):
-        y = y.numpy()
-    if isinstance(y_adv, torch.Tensor):
-        y_adv = y_adv.numpy()
-    if isinstance(y_pred, torch.Tensor):
-        y_pred = y_pred.numpy()
-
+    def _kl(p: torch.tensor, q: torch.tensor, kl):
+        p, q = p.view(-1, p.size(-1)), q.view(-1, q.size(-1))
+        m = (0.5 * (p + q)).log()
+        return 0.5 * (kl(m, p.log()) + kl(m, q.log()))
+    kl = nn.KLDivLoss(reduction='mean', log_target=log_target)
     if clf_log_softmax:
-        y_pred, y_adv = np.exp(y_pred), np.exp(y_adv)
+        y_pred, y_adv = torch.exp(y_pred), torch.exp(y_adv)
+    print(y, y_pred, y_adv)
+    x = _kl(y, y_pred, kl).numpy()
+    x_adv = _kl(y, y_adv, kl).numpy()
 
-    if log_target:
-        y = np.exp(y)
-
-    m = (y + y_pred) / 2
-    x = np.sqrt((entropy(y, m) + entropy(y_pred, m)) / 2)
-    m = (y + y_adv) / 2
-    x_adv = np.sqrt((entropy(y, m) + entropy(y_adv, m)) / 2)
     return x, x_adv
+
+    
+
+
+
+    # if isinstance(y, torch.Tensor):
+    #     y = y.numpy()
+    # if isinstance(y_adv, torch.Tensor):
+    #     y_adv = y_adv.numpy()
+    # if isinstance(y_pred, torch.Tensor):
+    #     y_pred = y_pred.numpy()
+
+    # if clf_log_softmax:
+    #     y_pred, y_adv = np.exp(y_pred), np.exp(y_adv)
+
+    # if log_target:
+    #     y = np.exp(y)
+
+    # m = (y + y_pred) / 2
+    # x = np.sqrt((entropy(y, m) + entropy(y_pred, m)) / 2)
+    # m = (y + y_adv) / 2
+    # x_adv = np.sqrt((entropy(y, m) + entropy(y_adv, m)) / 2)
+    # return x, x_adv
+
 
 
 def compute_kl_div(y, y_pred, y_pred_adv, clf_log_softmax: bool, 
@@ -75,35 +93,21 @@ def compute_distributional_distances(data_loader, clf, log_target: bool=False,
         y_pred_adv.append(y_pred_adv_i)
         y.append(y_i)
 
-    y_pred = torch.cat(y_pred, dim=0)
-    y_pred_adv = torch.cat(y_pred_adv, dim=0)
+    y_pred = torch.cat(y_pred, dim=0).detach()
+    y_pred_adv = torch.cat(y_pred_adv, dim=0).detach()
     y = torch.cat(y, dim=0)
+    
     
     x, x_adv = compute_kl_div(y, y_pred, y_pred_adv, 
                    clf_log_softmax=clf_log_softmax, log_target=log_target)
     metrics['kl'] = {'x': x, 'x_adv': x_adv}
     
-    x, x_adv= compute_wasserstein(y, y_pred, y_pred_adv, clf_log_softmax=clf_log_softmax, 
-                                  log_target=log_target)
-    metrics['wasserstein'] = {'x': x, 'x_adv': x_adv}
+    # x, x_adv= compute_wasserstein(y, y_pred, y_pred_adv, clf_log_softmax=clf_log_softmax, 
+    #                               log_target=log_target)
+    # metrics['wasserstein'] = {'x': x, 'x_adv': x_adv}
     x, x_adv = compute_jensen_shannon_distance(y, y_pred, y_pred_adv,  
                         clf_log_softmax, log_target)
     metrics['jsd'] = {'x': x, 'x_adv': x_adv}
 
     return metrics
-
-
-
-
-
-
-
-
-
     
-
-    
-    
-        
-
-
