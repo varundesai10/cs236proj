@@ -1,5 +1,6 @@
 import yaml
 import h5py
+import matplotlib.pyplot as plt
 
 import os
 from datetime import datetime
@@ -47,3 +48,32 @@ def get_hd5_length(file_path, data_key):
     with h5py.File(file_path, 'r') as f:
         n = len(f[data_key])
     return n
+
+
+def create_and_store_results(file_path, file_name, data:list):
+    header = ['attack_name', 'measure', 'x_dist', 'x_adv_dist', 'num_samples', 'dataset']
+    file_path = os.path.join(file_path, f'{file_name}.txt')
+    with open(file_path, 'w') as file:
+        file.write('\t'.join(header) + '\n')
+        for row in data:
+            file.write('\t'.join(map(str, row)) + '\n')
+
+def visualize_combined_samples(clean_samples, adversarial_samples, title, save_path):
+    fig, axes = plt.subplots(nrows=4, ncols=2, figsize=(5,5))
+    fig.suptitle(title)
+
+    # Plot clean samples on the left
+    for i in range(4):
+        axes[i, 0].imshow(clean_samples[i].squeeze(), cmap='gray')
+        axes[i,0].axis('off')
+        if i ==0:
+            axes[i, 0].set_title(f'Clean Samples')
+    
+    for i in range(4):
+        axes[i, 1].imshow(adversarial_samples[i].squeeze(), cmap='gray')
+        axes[i,1].axis('off')
+        if i ==0:
+            axes[i, 1].set_title(f'Adversarial Samples')
+    
+    plt.savefig(save_path)
+
