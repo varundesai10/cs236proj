@@ -13,12 +13,13 @@ def load_yaml_file(file_path):
             print(f"Error loading YAML file {file_path}: {e}")
             return None
         
-def save_attack_samples(directory_path, attack_name, x, y):
+def save_attack_samples(directory_path, attack_name, x, x_adv, y):
     file_name = os.path.join(directory_path, attack_name)
     if '.hdf5' not in file_name:
         file_name += '.hdf5'
     with h5py.File(file_name, 'w') as f:
         f.create_dataset('x', data=x)
+        f.create_dataset('x_adv', data=x_adv)
         f.create_dataset('y', data=y)
 
 def get_timestamp_id():

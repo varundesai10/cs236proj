@@ -13,10 +13,19 @@ def instantiate_carlini_l2_attack(clf, confidence: float, targeted: bool = True,
     att = CarliniL2Method(clf, confidence, targeted, learning_rate, binary_search_steps, max_iter)
     return att
 
-def instantiate_boundary_attack(clf, batch_size=64, targeted=True, 
-                                delta:float=0.01, epsilon: float = 0.01, 
-                                step_adapt: float = 0.667, max_iter: int = 5000):
-    att = BoundaryAttack(clf, batch_size, targeted, delta, epsilon, step_adapt, max_iter)
+def instantiate_boundary_attack(clf, batch_size: int = 64, 
+                                targeted: bool = True, 
+                                delta: float = 0.01, epsilon: float = 0.01,
+                                step_adapt: float = 0.667,
+                                max_iter: int = 5000, 
+                                num_trial: int = 25, sample_size: int = 20, 
+                                init_size: int = 100, min_epsilon: float = 0.0, 
+                                verbose: bool = True):
+    att = BoundaryAttack(clf, batch_size=batch_size, targeted=targeted,
+                        delta=delta, epsilon=epsilon, step_adapt=step_adapt, 
+                        max_iter=max_iter, num_trial=num_trial, sample_size=sample_size,
+                        init_size=init_size, min_epsilon=min_epsilon, verbose=verbose
+                         )
     return att
 
 def instantiate_deep_fool_attack(clf, max_iter=100, epsilon=1e-6, nb_grads=10, batch_size=2):

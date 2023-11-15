@@ -6,14 +6,13 @@ import torchvision.transforms as transforms
 import argparse
 import os
 
-from attacks.mnist_model import load_mnist_model
+from mnist_model import load_mnist_model
 from attack_generator import generate_attacks
 from attack_utils import load_yaml_file, get_timestamp_id
 from logger import AttackLogger
 
-
-ATTACK_LIST = ['carlini_l2', 'boundary', 'fsgm', 'deep_fool', 'pgm', 'jsma', 
-               'virtual_adv', 'wasserstein']
+# 'fsgm', 'deep_fool', 'pgm', 'jsma','wasserstein', 'boundary, 'carlini_l2'
+ATTACK_LIST = [ 'wasserstein']
 
 def cifar_params_dict(store_path):
     
@@ -36,7 +35,7 @@ def mnist_params_dict(store_path):
                 max_pixel_value=1.0,
                 min_pixel_value=-1.0,
                 target_class=None,
-                input_shape=(28,28),
+                input_shape=(1,28,28),
                 num_channels=1,
                 num_classes=10,
                 attack_config_path='./attack_config.yml',
@@ -75,21 +74,21 @@ def main(args):
                                                     download=True, 
                                                     transform=transform_test)
     data_loader = torch.utils.data.DataLoader(test_dataset, 
-                                                batch_size=params.batch_size, 
+                                                batch_size=params['batch_size'], 
                                                 shuffle=True)
 
     os.makedirs(params['root_dir'], exist_ok=True)
-    attack_config_dict=load_yaml_file(args.attack_config_path)
+    attack_config_dict=load_yaml_file(args.config)
     model.eval()  
-    generate_attacks(model, data_loader=data_loader, attack_list=None,
-                     num_samples=args.num_samples, 
-                     input_shape=params.input_shape, 
-                     num_classes=params.num_classes,
-                     target_class=params.target_class, 
+    generate_attacks(model, data_loader=data_loader, attack_list=ATTACK_LIST,
+                     num_samples=args.nsamples, 
+                     input_shape=params['input_shape'], 
+                     num_classes=params['num_classes'],
+                     target_class=params['target_class'], 
                      attack_config_dict=attack_config_dict,
-                     min_pixel_value=params.min_pixel_val, 
-                     max_pixel_value=params.max_pixel_val,
-                     dir_path=params.adv_dir)
+                     min_pixel_value=params['min_pixel_value'], 
+                     max_pixel_value=params['max_pixel_value'],
+                     dir_path=params['root_dir'])
 
 
 if __name__ == "__main__":
@@ -98,15 +97,15 @@ if __name__ == "__main__":
 
     parser.add_argument('-d', '--dataset', type=str, 
                         help='dataset name. Options are cifar10 or mnist', 
-                        required=True, default='mnist')
-    parser.add_argument('-c', '--aconfig', type=str, 
+                        required=False, default='mnist')
+    parser.add_argument('-c', '--config', type=str, 
                         help='attack config file yaml file path', 
-                        required=True, default='./attack_config.yml')
+                        required=False, default='./attack_config.yml')
     parser.add_argument('-n', '--nsamples', type=int, 
                         help='number of samples to generate per attack',
-                        default=2000
+                        default=64
                         )
-    parser.add_argument('-d', '--dir', type=str, 
+    parser.add_argument('--dir', type=str, 
                         help='directory path to which attacks should be stored',
                         default='../datasets/')
 

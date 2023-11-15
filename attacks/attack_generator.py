@@ -6,17 +6,18 @@ from typing import Union
 
 import logging
 
-from utils import save_attack_samples
+from attack_utils import save_attack_samples
 from attacks import ATTACKS
 
 class AttackGenerator(object):
     def __init__(self, clf, target_class: Union[list, int, str], 
-                 attack_list: list, attack_config_dict: dict):
+                 attack_list: list, attack_config_dict: dict, logger=None):
         self.clf = clf
         self.target_class = target_class
         self.attack_config  = attack_config_dict
         self.attack_instance_dict = {}
         self.attack_list = attack_list
+        self.logger = logger
 
         self._init_attack_matrix()
 
@@ -24,7 +25,7 @@ class AttackGenerator(object):
         for attack_name in self.attack_list:
             self.attack_instance_dict[attack_name] = ATTACKS[attack_name](self.clf, **self.attack_config[attack_name])
 
-    def generate_attack(self, x: torch.Tensor, 
+    def generate_attack(self, x: torch.Tensor,  
                         y: Union[torch.Tensor, None]) -> dict:
         attack_samples_dict = {}
         for attack_name in self.attack_list:
@@ -38,7 +39,6 @@ def generate_attacks(model, data_loader, attack_list, num_samples,
                      attack_config_dict,  min_pixel_value=-1.0, max_pixel_value=1.0,
                     dir_path= '../datasets'):
 
-    
     criterion = nn.CrossEntropyLoss()
     clf = PyTorchClassifier(model=model,
                             clip_values=(min_pixel_value, max_pixel_value), 
@@ -47,9 +47,10 @@ def generate_attacks(model, data_loader, attack_list, num_samples,
                             nb_classes=num_classes)
     
     for attack_name in attack_list:
+        data_loader = iter(data_loader)
         attack_name = [attack_name] if isinstance(attack_name, str) else attack_name
         attack_runer = AttackGenerator(clf, target_class=target_class,
-                                       attack_list= [attack_name],
+                                       attack_list= attack_name,
                                         attack_config_dict=attack_config_dict)
         x_adv = []
         y_adv = []
@@ -60,18 +61,18 @@ def generate_attacks(model, data_loader, attack_list, num_samples,
                 b = y == target_class
                 idx = b.nonzero()
                 x , y = x[idx,:,:,:].squeeze(1), y[idx]
-
-            x_adv_i = attack_runer.generate_attack(x.numpy(), y=None)[attack_name[0]]
+            y_one_hot = torch.nn.functional.one_hot(y, num_classes).squeeze(1).numpy()
+            x_adv_i = attack_runer.generate_attack(x.numpy(), y=y_one_hot)[attack_name[0]]
             y_adv.append(y)
             x_adv.append(x_adv_i)
             count += len(x)
-            if count > num_samples:
+            if count >= num_samples:
                 break
         
         sample_shape = x_adv_i.shape[1:]
         x_adv = np.array(x_adv).reshape(-1, *sample_shape)
         y_adv = np.array(y_adv).reshape(-1)
-        save_attack_samples(dir_path, attack_name, x, y)
+        save_attack_samples(dir_path, attack_name[0],x, x_adv, y)
         logging.info(f'Attackss saved in {dir_path} with filename: {attack_name[0]}')
 
 

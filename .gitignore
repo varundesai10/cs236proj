@@ -6,8 +6,9 @@ results/
 /attacks/model.pth
 /attacks/test.ipynb
 /attacks/sample_model.py
+/attacks/loggers/
+/attacks/mnist
 .DS_Store
-
 
 
 
