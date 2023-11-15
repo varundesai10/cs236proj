@@ -10,7 +10,8 @@ def bpda_total(x, y, diffusion, network_clf, config):
         transform_raw_to_clf = clf_to_raw(raw_to_clf(config.structure.dataset))
     else:
         transform_raw_to_clf = raw_to_clf(config.structure.dataset)
-    fmodel = foolbox.PyTorchModel(network_clf, bounds=(0., 1.),device=config.device.clf_device, preprocessing=foolbox_preprocess(config.structure.dataset))
+    fmodel = foolbox.PyTorchModel(network_clf, bounds=(0., 1.),device=config.device.clf_device, 
+                                  preprocessing=foolbox_preprocess(config.structure.dataset))
     x = x.to(config.device.diff_device)
     y = y.to(config.device.clf_device)
     x_temp = x.clone().detach()
@@ -19,7 +20,9 @@ def bpda_total(x, y, diffusion, network_clf, config):
         grad = torch.zeros_like(x_temp).to(config.device.diff_device)
         score_diff = torch.zeros_like(x_temp).to(config.device.diff_device)
         for j in range(config.attack.n_eot):
-            x_temp_eot = diff_purify(x_temp, diffusion, max_iter=config.purification.max_iter, mode="attack", config=config)[0][-1].to(config.device.clf_device)
+            x_temp_eot = diff_purify(x_temp, diffusion, 
+                                     max_iter=config.purification.max_iter, 
+                                     mode="attack", config=config)[0][-1].to(config.device.clf_device)
 
             if config.attack.ball_dim==-1:
                 attack = foolbox.attacks.LinfPGD(rel_stepsize=0.25, steps=1, random_start=False) # Can be modified for better attack

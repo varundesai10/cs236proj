@@ -28,3 +28,22 @@ def get_timestamp_id():
     datetime_object = datetime.utcfromtimestamp(timestamp)
     id = datetime_object.strftime('%Y%m%d%H%M%S')
     return id
+
+
+def get_hd5_length(file_path, data_key):
+    """
+    Function that computes the number of observations in a dataset from an h5
+    file
+
+    Args:
+        file_path (str): path to .h5 document
+        data_key (str): key string that maps to the correct dataset in the .h5
+            file
+
+    Returns:
+        int: length of the dataset
+    """
+
+    with h5py.File(file_path, 'r') as f:
+        n = len(f[data_key])
+    return n

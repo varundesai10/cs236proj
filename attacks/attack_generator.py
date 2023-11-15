@@ -37,7 +37,7 @@ class AttackGenerator(object):
 def generate_attacks(model, data_loader, attack_list, num_samples,
                      input_shape, num_classes, target_class: Union[None, int],
                      attack_config_dict,  min_pixel_value=-1.0, max_pixel_value=1.0,
-                    dir_path= '../datasets'):
+                    dir_path= '../datasets', **kwargs):
 
     criterion = nn.CrossEntropyLoss()
     clf = PyTorchClassifier(model=model,
@@ -45,7 +45,9 @@ def generate_attacks(model, data_loader, attack_list, num_samples,
                             loss=criterion, 
                             input_shape=input_shape, 
                             nb_classes=num_classes)
-    
+    if num_samples == None:
+        num_samples = np.inf
+        
     for attack_name in attack_list:
         data_loader = iter(data_loader)
         attack_name = [attack_name] if isinstance(attack_name, str) else attack_name

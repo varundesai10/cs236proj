@@ -20,13 +20,14 @@ def cifar_params_dict(store_path):
             max_pixel_value=1.0,
             min_pixel_value=-1.0,
             target_class=None,
-            input_shape=(32,32),
+            input_shape=(3,32,32),
             num_channels=3,
             num_classes=10,
             attack_config_path='./attack_config.yml',
             batch_size=64,
             adv_name_file='cifar-10_adv')
-    params['root_dir'] = os.path.join(store_path, 'cifar-10',  params['adv_name_file'])
+    params['dir_path'] = os.path.join(store_path, 'cifar-10', 
+                                    params['adv_name_file'])
     return params
 
 def mnist_params_dict(store_path):
@@ -41,7 +42,7 @@ def mnist_params_dict(store_path):
                 attack_config_path='./attack_config.yml',
                 batch_size=64,
                 adv_name_file='mnist_adv')
-    params['root_dir'] = os.path.join(store_path, 'mnist',  params['adv_name_file'])
+    params['dir_path'] = os.path.join(store_path, 'mnist',  params['adv_name_file'])
     return params
 
 
@@ -77,19 +78,12 @@ def main(args):
                                                 batch_size=params['batch_size'], 
                                                 shuffle=True)
 
-    os.makedirs(params['root_dir'], exist_ok=True)
+    os.makedirs(params['dir_path'], exist_ok=True)
     attack_config_dict=load_yaml_file(args.config)
     model.eval()  
     generate_attacks(model, data_loader=data_loader, attack_list=ATTACK_LIST,
                      num_samples=args.nsamples, 
-                     input_shape=params['input_shape'], 
-                     num_classes=params['num_classes'],
-                     target_class=params['target_class'], 
-                     attack_config_dict=attack_config_dict,
-                     min_pixel_value=params['min_pixel_value'], 
-                     max_pixel_value=params['max_pixel_value'],
-                     dir_path=params['root_dir'])
-
+                     attack_config_dict=attack_config_dict, **params)
 
 if __name__ == "__main__":
     # Create the argument parser

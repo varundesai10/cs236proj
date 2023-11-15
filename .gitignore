@@ -8,6 +8,7 @@ results/
 /attacks/sample_model.py
 /attacks/loggers/
 /attacks/mnist
+/attacks/cifar10
 .DS_Store
 
 

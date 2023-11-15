@@ -23,7 +23,6 @@ class Net(nn.Module):
 
 def load_mnist_model():
     model = Net()
-    
     model.load_state_dict(torch.load("./model.pth"), strict=False)
     model.eval()
     return model
