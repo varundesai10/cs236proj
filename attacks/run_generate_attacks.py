@@ -15,7 +15,6 @@ from logger import AttackLogger
 ATTACK_LIST = [ 'wasserstein']
 
 def cifar_params_dict(store_path):
-    
     params = dict(
             max_pixel_value=1.0,
             min_pixel_value=-1.0,
@@ -25,7 +24,10 @@ def cifar_params_dict(store_path):
             num_classes=10,
             attack_config_path='./attack_config.yml',
             batch_size=64,
-            adv_name_file='cifar-10_adv')
+            adv_name_file='cifar-10_adv',
+            dataset='cifar-10', 
+            log_target=False,
+            clf_log_softmax=False)
     params['dir_path'] = os.path.join(store_path, 'cifar-10', 
                                     params['adv_name_file'])
     return params
@@ -41,7 +43,10 @@ def mnist_params_dict(store_path):
                 num_classes=10,
                 attack_config_path='./attack_config.yml',
                 batch_size=64,
-                adv_name_file='mnist_adv')
+                adv_name_file='mnist_adv', 
+                dataset='mnist',
+                log_target=False,
+            clf_log_softmax=False)
     params['dir_path'] = os.path.join(store_path, 'mnist',  params['adv_name_file'])
     return params
 
@@ -66,6 +71,8 @@ def main(args):
                                "cifar10_resnet20", 
                                pretrained=True)
         params = cifar_params_dict(args.dir)
+        model = nn.Sequential(model, 
+                              nn.Softmax(dim=1))
         transform_test = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),

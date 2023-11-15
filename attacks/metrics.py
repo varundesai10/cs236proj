@@ -59,7 +59,7 @@ def compute_kl_div(y, y_pred, y_pred_adv, clf_log_softmax: bool,
     x_adv = kl_x_adv.item()
     return x, x_adv
 
-    
+
 def compute_distributional_distances(data_loader, clf, log_target: bool=False, 
                                        clf_log_softmax: bool = False):
     metrics = {}

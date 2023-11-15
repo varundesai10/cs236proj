@@ -22,6 +22,7 @@ def save_attack_samples(directory_path, attack_name, x, x_adv, y):
         f.create_dataset('x', data=x)
         f.create_dataset('x_adv', data=x_adv)
         f.create_dataset('y', data=y)
+    return file_name
 
 def get_timestamp_id():
     current_datetime = datetime.now()
@@ -49,14 +50,15 @@ def get_hd5_length(file_path, data_key):
         n = len(f[data_key])
     return n
 
-
-def create_and_store_results(file_path, file_name, data:list):
+def create_and_store_results(file_path, file_name, metrics: dict, attack_name, num_samples, dataset:str):
     header = ['attack_name', 'measure', 'x_dist', 'x_adv_dist', 'num_samples', 'dataset']
     file_path = os.path.join(file_path, f'{file_name}.txt')
-    with open(file_path, 'w') as file:
+    with open(file_path, 'w+') as file:
         file.write('\t'.join(header) + '\n')
-        for row in data:
+        for key in metrics:
+            row = [attack_name, key, metrics[key]['x'], metrics[key]['x_adv'], num_samples, dataset]
             file.write('\t'.join(map(str, row)) + '\n')
+
 
 def visualize_combined_samples(clean_samples, adversarial_samples, title, save_path):
     fig, axes = plt.subplots(nrows=4, ncols=2, figsize=(5,5))
