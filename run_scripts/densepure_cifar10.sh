@@ -4,6 +4,7 @@ cd ..
 sigma=$1
 steps=$2
 reverse_seed=$3
+n=$4
 
 python eval_certified_densepure.py \
 --exp exp/cifar10 \
@@ -15,10 +16,10 @@ python eval_certified_densepure.py \
 --lp_norm L2 \
 --outfile results/cifar10-densepure-sample_num_100000-noise_$sigma-$steps-steps-$reverse_seed \
 --sigma $sigma \
---N 100000 \
+--N $n \
 --N0 100 \
 --certified_batch 100 \
---sample_id $(seq -s ' ' 0 20 9980) \
+--sample_id $(seq -s ' ' 0 200 9800) \
 --use_id \
 --certify_mode purify \
 --advanced_classifier vit \
