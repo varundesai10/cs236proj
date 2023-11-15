@@ -4,7 +4,8 @@ from typing import Union
 
 from art.attacks.evasion import CarliniL2Method, BoundaryAttack, DeepFool, \
                         FastGradientMethod, ProjectedGradientDescentPyTorch, \
-                        SaliencyMapMethod, VirtualAdversarialMethod, Wasserstein
+                        SaliencyMapMethod, VirtualAdversarialMethod, Wasserstein, \
+                        UniversalPerturbation
 
 def instantiate_carlini_l2_attack(clf, confidence: float, targeted: bool = True, 
                         learning_rate:float = 0.01, 
@@ -79,6 +80,19 @@ def instantiate_wasserstein_attack(clf, targeted: bool = True, regularization: f
     return att
 
 
+def instantiate_universal_perturbation_attack(clf, 
+                                  attacker: str = 'deepfool', 
+                                  attacker_params= None, 
+                                  delta: float = 0.2, 
+                                  max_iter: int = 20, 
+                                  eps: float = 10.0, 
+                                  norm: str = 'inf', 
+                                  batch_size: int = 32, 
+                                  verbose: bool = True):
+    return UniversalPerturbation(clf, attacker, attacker_params, delta, max_iter, eps, norm, batch_size, verbose)
+
+
+
 
 ATTACKS = {'carlini_l2': instantiate_carlini_l2_attack,
            'boundary': instantiate_boundary_attack,
@@ -88,4 +102,5 @@ ATTACKS = {'carlini_l2': instantiate_carlini_l2_attack,
            'jsma': instantiate_jsma_attack,
            'virtual_adv': instantiate_virtual_adv_attack,
            'wasserstein': instantiate_wasserstein_attack,
+           'universal': instantiate_universal_perturbation_attack
 }

@@ -19,9 +19,14 @@ def compute_wasserstein(y, y_pred, y_adv, u_weight=None, v_weight=None,
 
     if log_target:
         y = np.exp(y)
-    x = wasserstein_distance(y, y_pred, u_weights=u_weight, v_weights=v_weight)
-    x_adv = wasserstein_distance(y, y_adv, u_weights=u_weight, v_weights=v_weight)
-
+    support = np.arange(10)
+    x= []
+    x_adv = []
+    for i in range(len(y)):
+        x.append(wasserstein_distance(support, support, u_weights=y[i,:], v_weights=y_pred[i,:]))
+        x_adv.append(wasserstein_distance(support, support,  u_weights=y[i,:], v_weights=y_adv[i,:]))
+    x = sum(x)/len(x)
+    x_adv = sum(x_adv)/len(x_adv)
     return x, x_adv
 
 # def _jsd(p, q):
@@ -49,7 +54,6 @@ def compute_jensen_shannon_distance(y, y_pred, y_adv,
     x_adv = _kl(y, y_adv, kl).numpy()
     print(x, x_adv)
     return x, x_adv
-
 
 def compute_kl_div(y, y_pred, y_pred_adv, clf_log_softmax: bool, 
                    log_target: bool=False):
@@ -91,11 +95,13 @@ def compute_distributional_distances(data_loader, clf, log_target: bool=False,
     x, x_adv = compute_jensen_shannon_distance(y, y_pred, y_pred_adv,  
                         clf_log_softmax, log_target)
     metrics['jsd'] = {'x': x, 'x_adv': x_adv}
+    x, x_adv= compute_wasserstein(y, y_pred, y_pred_adv, clf_log_softmax=clf_log_softmax, 
+                                  log_target=log_target)
+    metrics['wasserstein'] = {'x': x, 'x_adv': x_adv}
     return metrics
+
     
-    # x, x_adv= compute_wasserstein(y, y_pred, y_pred_adv, clf_log_softmax=clf_log_softmax, 
-    #                               log_target=log_target)
-    # metrics['wasserstein'] = {'x': x, 'x_adv': x_adv}
+
 
 
 

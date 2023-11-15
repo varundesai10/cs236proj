@@ -12,7 +12,7 @@ from attack_utils import load_yaml_file, get_timestamp_id
 from logger import AttackLogger
 
 # 'fsgm', 'deep_fool', 'pgm', 'jsma','wasserstein', 'boundary, 'carlini_l2'
-ATTACK_LIST = [ 'pgm']
+ATTACK_LIST = ['fsgm', 'deep_fool', 'universal', 'pgm', 'jsma', 'virtual_adv','carlini_l2', 'boundary', 'wasserstein']
 
 def cifar_params_dict(store_path):
     params = dict(

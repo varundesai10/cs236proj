@@ -71,16 +71,22 @@ def create_and_store_results(file_path, file_name, metrics: dict, attack_name, n
 def plot_samples(clean_samples, adversarial_samples, title, save_path):
     fig, axes = plt.subplots(nrows=4, ncols=2, figsize=(5,5))
     fig.suptitle(title)
-
+    channels = clean_samples.shape[1]
     # Plot clean samples on the left
     for i in range(4):
-        axes[i, 0].imshow(np.transpose(clean_samples[i],axes=(1,2,0)))
+        if channels == 1:
+            axes[i, 0].imshow(np.transpose(clean_samples[i],axes=(1,2,0)), cmap='gray')
+        else:
+            axes[i, 0].imshow(np.transpose(clean_samples[i],axes=(1,2,0)))
         axes[i,0].axis('off')
         if i ==0:
             axes[i, 0].set_title(f'Clean Samples')
     
     for i in range(4):
-        axes[i, 1].imshow(np.transpose(adversarial_samples[i], axes=(1,2,0)))
+        if channels == 1:
+            axes[i, 1].imshow(np.transpose(adversarial_samples[i], axes=(1,2,0)), cmap='gray')
+        else:
+             axes[i, 1].imshow(np.transpose(adversarial_samples[i], axes=(1,2,0)))
         axes[i,1].axis('off')
         if i ==0:
             axes[i, 1].set_title(f'Adversarial Samples')

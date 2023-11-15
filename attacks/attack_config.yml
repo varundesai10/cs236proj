@@ -1,8 +1,8 @@
 carlini_l2:
-  confidence: 0.0
+  confidence: 0.99
   learning_rate: 0.1
-  binary_search_steps: 10
-  max_iter: 10
+  binary_search_steps: 20
+  max_iter: 100
   targeted: false
 
 boundary:
@@ -11,7 +11,7 @@ boundary:
   delta: 0.01
   epsilon: 0.01 
   step_adapt: 0.667 
-  max_iter: 5000 
+  max_iter: 200
   num_trial: 25
   sample_size: 20
   init_size: 100
@@ -21,7 +21,7 @@ boundary:
 deep_fool:
   max_iter: 100
   epsilon: 0.000001
-  nb_grads: 10
+  nb_grads: 15
   batch_size: 2
 
 fsgm:
@@ -43,14 +43,14 @@ pgm:
   batch_size: 32
 
 jsma: 
-  theta: 0.1
+  theta: .7
   gamma: 1.0
   batch_size: 64
 
 virtual_adv:
   max_iter: 10
-  finite_diff: 0.000001
-  eps: 0.1
+  finite_diff: 0.2
+  eps: 0.4
   batch_size: 64
   verbose: true
 
@@ -69,6 +69,16 @@ wasserstein:
   conjugate_sinkhorn_max_iter: 400
   projected_sinkhorn_max_iter: 400 
   batch_size: 1
+
+universal:
+  attacker: 'deepfool'
+  attacker_params: null 
+  delta: 0.2
+  max_iter: 20 
+  eps: 10.0
+  norm: 'inf'
+  batch_size: 64 
+  verbose: true
 
 
 
