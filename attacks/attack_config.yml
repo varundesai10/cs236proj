@@ -1,0 +1,78 @@
+carlini_l2:
+  confidence: 0.0
+  learning_rate: 0.1
+  binary_search_steps: 10
+  max_iter: 10
+  targeted: false
+
+boundary:
+  batch_size: 64 
+  targeted: false
+  delta: 0.01
+  epsilon: 0.01 
+  step_adapt: 0.667 
+  max_iter: 5000 
+  num_trial: 25
+  sample_size: 20
+  init_size: 100
+  min_epsilon: 0.0
+  verbose: true
+
+deep_fool:
+  max_iter: 100
+  epsilon: 0.000001
+  nb_grads: 10
+  batch_size: 2
+
+fsgm:
+  norm: 'inf'
+  eps: 0.3
+  eps_step: 0.1
+  targeted: false
+  num_random_init: 0
+  batch_size: 32
+
+pgm: 
+  norm: 'inf'
+  eps: 0.3
+  eps_step: 0.1
+  decay: null
+  max_iter: 100
+  targeted: false
+  num_random_init: 0
+  batch_size: 32
+
+jsma: 
+  theta: 0.1
+  gamma: 1.0
+  batch_size: 64
+
+virtual_adv:
+  max_iter: 10
+  finite_diff: 0.000001
+  eps: 0.1
+  batch_size: 64
+  verbose: true
+
+wasserstein:
+  targeted: false
+  regularization: 1.5
+  p: 2
+  kernel_size: 5
+  eps_step: 0.1
+  norm: 'wasserstein'
+  ball: 'wasserstein'
+  eps: 0.3
+  eps_iter: 10
+  eps_factor: 1.00001
+  max_iter: 100
+  conjugate_sinkhorn_max_iter: 400
+  projected_sinkhorn_max_iter: 400 
+  batch_size: 1
+
+
+
+
+
+
+
