@@ -12,11 +12,12 @@ from attack_utils import load_yaml_file, get_timestamp_id
 from logger import AttackLogger
 
 # 'fsgm', 'deep_fool', 'pgm', 'jsma','wasserstein', 'boundary, 'carlini_l2'
-ATTACK_LIST = ['fsgm', 
-               'deep_fool', 
-               'universal', 'pgm', 
-               'jsma', 'carlini_l2', 
-               'boundary', 'wasserstein', 'virtual_adv']
+# ATTACK_LIST = ['fsgm', 
+#                'deep_fool', 
+#                'universal', 'pgm', 
+#                'jsma', 'carlini_l2', 
+#                'boundary','virtual_adv', 'wasserstein', ]
+ATTACK_LIST = ['wasserstein']
 
 def cifar_params_dict(store_path):
     params = dict(
@@ -59,6 +60,8 @@ def main(args):
     os.makedirs('./loggers', exist_ok=True)
     log = AttackLogger(os.path.join('./loggers', get_timestamp_id()))
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if device.type == 'cpu':
+        device = torch.device('mps')
 
     if args.dataset == 'mnist':
         params = mnist_params_dict(args.dir)

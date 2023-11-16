@@ -65,10 +65,10 @@ wasserstein:
   eps: 0.3
   eps_iter: 10
   eps_factor: 1.00001
-  max_iter: 100
-  conjugate_sinkhorn_max_iter: 400
-  projected_sinkhorn_max_iter: 400 
-  batch_size: 1
+  max_iter: 30
+  conjugate_sinkhorn_max_iter: 50
+  projected_sinkhorn_max_iter: 50 
+  batch_size: 64
 
 universal:
   attacker: 'deepfool'
