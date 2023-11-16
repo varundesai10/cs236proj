@@ -29,13 +29,6 @@ def compute_wasserstein(y, y_pred, y_adv, u_weight=None, v_weight=None,
     x_adv = sum(x_adv)/len(x_adv)
     return x, x_adv
 
-# def _jsd(p, q):
-#     m = 0.5 * (p + q)
-#     kl_div_p = torch.nn.functional.kl_div(p.log(), m, reduction='mean', log_target=False)
-#     kl_div_q = torch.nn.functional.kl_div(q.log(), m, reduction='mean', log_target=False)
-#     jsd = 0.5 * (kl_div_p + kl_div_q)
-#     return jsd
-
 def compute_jensen_shannon_distance(y, y_pred, y_adv, 
                                     clf_log_softmax:bool = False, 
                                     log_target: bool=False):
@@ -52,7 +45,6 @@ def compute_jensen_shannon_distance(y, y_pred, y_adv,
     y_adv = torch.clamp(y_adv, 1e-9)
     x = _kl(y, y_pred, kl).numpy()
     x_adv = _kl(y, y_adv, kl).numpy()
-    print(x, x_adv)
     return x, x_adv
 
 def compute_kl_div(y, y_pred, y_pred_adv, clf_log_softmax: bool, 
@@ -77,14 +69,13 @@ def compute_distributional_distances(data_loader, clf, log_target: bool=False,
     y_pred = []
     y_pred_adv =  []
     y = []
-    
     for x_i, x_adv_i, y_i in data_loader:
         y_pred_i = clf(x_i)
         y_pred_adv_i = clf(x_adv_i)
         y_pred.append(y_pred_i)
         y_pred_adv.append(y_pred_adv_i)
         y.append(y_i)
-
+    
     y_pred = torch.cat(y_pred, dim=0).detach()
     y_pred_adv = torch.cat(y_pred_adv, dim=0).detach()
     y = torch.cat(y, dim=0)

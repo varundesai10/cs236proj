@@ -7,7 +7,9 @@ from purification import *
 # Attack input x
 def bpda_strong(x, y, diffusion , network_clf, config,model=None):
     transform_raw_to_clf = raw_to_clf(config.structure.dataset)
-    fmodel = foolbox.PyTorchModel(network_clf, bounds=(0., 1.), device=config.device.diff_device ,preprocessing=foolbox_preprocess(config.structure.dataset))
+    fmodel = foolbox.PyTorchModel(network_clf, bounds=(0., 1.), 
+                                  device=config.device.diff_device, 
+                                  preprocessing=foolbox_preprocess(config.structure.dataset))
     x = x.to(config.device.diff_device)
     y = y.to(config.device.clf_device)
     x_temp = x.clone().detach()

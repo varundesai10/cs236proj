@@ -93,7 +93,6 @@ class AttackDataset(Dataset):
         """Generates one sample of data"""
         if not hasattr(self, 'file_archive'):
             self._open_h5_file()
-
         x = self.x_original[index]
         x_adv = self.x_adv[index]
 

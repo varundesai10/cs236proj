@@ -46,6 +46,7 @@ def generate_attacks(model, data_loader, attack_list, num_samples,
                      dir_path= '../datasets', 
                      batch_size=64, 
                     visualize_samples=True,
+                    device='gpu',
                     **kwargs):
 
     criterion = nn.CrossEntropyLoss()
@@ -53,7 +54,8 @@ def generate_attacks(model, data_loader, attack_list, num_samples,
                             clip_values=(min_pixel_value, max_pixel_value), 
                             loss=criterion, 
                             input_shape=input_shape, 
-                            nb_classes=num_classes)
+                            nb_classes=num_classes,
+                            device_type=device)
     if num_samples == None:
         num_samples = np.inf
 
@@ -88,7 +90,7 @@ def generate_attacks(model, data_loader, attack_list, num_samples,
         y_adv = np.array(y_adv).reshape(-1)
         
         path_file = save_attack_samples(dir_path, attack_name[0], 
-                                        x_original, x_adv, y)
+                                        x_original, x_adv, y_adv)
         dataset_adv = AttackDataset(path_file, indexes=None, 
                                     n_classes=num_classes, 
                                     x_original_key='x', 
@@ -97,7 +99,8 @@ def generate_attacks(model, data_loader, attack_list, num_samples,
                                     rescale=False)
         data_loader_adv = DataLoader(dataset_adv, 
                                      batch_size=batch_size, 
-                                     shuffle=False)
+                                     shuffle=False, 
+                                     drop_last=True)
         metrics = compute_distributional_distances(data_loader=data_loader_adv,
                                                    clf=model, 
                                                    log_target=kwargs.get('log_target', False),

@@ -12,7 +12,11 @@ from attack_utils import load_yaml_file, get_timestamp_id
 from logger import AttackLogger
 
 # 'fsgm', 'deep_fool', 'pgm', 'jsma','wasserstein', 'boundary, 'carlini_l2'
-ATTACK_LIST = ['fsgm', 'deep_fool', 'universal', 'pgm', 'jsma', 'virtual_adv','carlini_l2', 'boundary', 'wasserstein']
+ATTACK_LIST = ['fsgm', 
+               'deep_fool', 
+               'universal', 'pgm', 
+               'jsma', 'carlini_l2', 
+               'boundary', 'wasserstein', 'virtual_adv']
 
 def cifar_params_dict(store_path):
     params = dict(
@@ -54,6 +58,7 @@ def mnist_params_dict(store_path):
 def main(args):
     os.makedirs('./loggers', exist_ok=True)
     log = AttackLogger(os.path.join('./loggers', get_timestamp_id()))
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     if args.dataset == 'mnist':
         params = mnist_params_dict(args.dir)
@@ -83,14 +88,15 @@ def main(args):
                                                     transform=transform_test)
     data_loader = torch.utils.data.DataLoader(test_dataset, 
                                                 batch_size=params['batch_size'], 
-                                                shuffle=True)
-
+                                                shuffle=True, 
+                                                drop_last=True)
+    model.to(device)
     os.makedirs(params['dir_path'], exist_ok=True)
     attack_config_dict=load_yaml_file(args.config)
     model.eval()  
     generate_attacks(model, data_loader=data_loader, attack_list=ATTACK_LIST,
                      num_samples=args.nsamples, 
-                     attack_config_dict=attack_config_dict, **params)
+                     attack_config_dict=attack_config_dict, device=device, **params)
 
 if __name__ == "__main__":
     # Create the argument parser
