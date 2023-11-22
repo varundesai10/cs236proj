@@ -5,20 +5,21 @@ from statsmodels.stats.proportion import proportion_confint
 from scipy.stats import norm
 
 def gain_results(args):
-    file_merge = open(str(args.datasets)+'_'+str(args.sigma)+'_'+str(args.results_file), 'w')
+    args.sigma = int(args.sigma) if args.sigma.is_integer() else args.sigma
+    file_merge = open(str(args.datasets)+'_'+str(args.steps)+'_'+str(args.sigma)+'_'+str(args.results_file), 'w')
     file_merge.write("idx\tlabel\tpredict\tradius\tcorrect\n")
     for sample_id in range(args.sample_num):
 
         n0_predictions_list = []
         n_predictions_list = []
         for i in range(args.majority_vote_num):
-            id_file = open(str(args.datasets)+'-densepure-sample_num_'+str(args.N0)+'-noise_'+str(args.sigma)+'-'+str(args.steps)+'-steps-'+str(i), 'r')
+            id_file = open(str(args.datasets)+'-densepure-sample_num_'+str(args.N)+'-noise_'+str(args.sigma)+'-'+str(args.steps)+'-steps-'+str(i)+'_diffpure', 'r')
             lines = id_file.readlines()
             line = lines[sample_id+1].split('\t')
             label = int(line[1])
 
-            n0_predictions = np.load('exp/'+str(args.datasets)+'/'+str(args.sigma)+'-'+str(args.sample_id_list[sample_id])+'-'+str(i)+'-n0_predictions.npy')
-            n_predictions = np.load('exp/'+str(args.datasets)+'/'+str(args.sigma)+'-'+str(args.sample_id_list[sample_id])+'-'+str(i)+'-n_predictions.npy')
+            n0_predictions = np.load('../exp/'+str(args.datasets)+'/'+str(args.sigma)+'-'+str(args.sample_id_list[sample_id])+'-'+str(i)+'-n0_predictions.npy')
+            n_predictions = np.load('../exp/'+str(args.datasets)+'/'+str(args.sigma)+'-'+str(args.sample_id_list[sample_id])+'-'+str(i)+'-n_predictions.npy')
 
             n0_predictions_list.append(n0_predictions)
             n_predictions_list.append(n_predictions)

@@ -21,9 +21,11 @@ from torch.utils.data import DataLoader
 from transformers import AutoModelForImageClassification, AutoFeatureExtractor
 import timm
 from networks import *
+import socket
 
 IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
+PRETRAINED_CIFAR10_PATH = '/media/nipunagarwala/cs236_project_data/models/cifar10_uncond_50M_500K.pt' #"pretrained/cifar10_uncond_50M_500K.pt"
 
 class DensePure_Certify(nn.Module):
     def __init__(self, args, config):
@@ -39,6 +41,9 @@ class DensePure_Certify(nn.Module):
                 self.classifier = Wide_ResNet(28,10,0.3,10)
                 checkpoint = torch.load('../wide-resnet.pytorch/checkpoint/cifar10/wide-resnet-28x10.t7')
                 self.classifier = checkpoint['net'].cuda()
+                self.classifier.training = False
+            elif args.advanced_classifier=='resnet56':
+                self.classifier = torch.hub.load("chenyaofo/pytorch-cifar-models", "cifar10_resnet56", pretrained=True).cuda()
                 self.classifier.training = False
             else:
                 raise NotImplementedError('no classifier')
@@ -65,7 +70,10 @@ class DensePure_Certify(nn.Module):
         if args.diffusion_type == 'guided-ddpm':
             self.runner = GuidedDiffusion(args, config, device=config.device)
         elif args.diffusion_type == 'ddpm':
-            self.runner = Diffusion(args, config, device=config.device)
+            if socket.getfqdn() == 'Jarvis':
+                self.runner = Diffusion(args, config, path=PRETRAINED_CIFAR10_PATH, device=config.device)
+            else:
+                self.runner = Diffusion(args, config, path="pretrained/cifar10_uncond_50M_500K.pt", device=config.device)
         else:
             raise NotImplementedError('unknown diffusion type')
 

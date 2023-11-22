@@ -8,7 +8,7 @@ python merge_results.py \
 --sample_id_list $(seq -s ' ' 0 20 9980) \
 --sample_num 500 \
 --majority_vote_num $majority_vote_num \
---N 100000 \
+--N 1000 \
 --N0 100 \
 --sigma $sigma \
 --classes_num 10 \
