@@ -21,6 +21,7 @@ from torch.utils.data import DataLoader
 from transformers import AutoModelForImageClassification, AutoFeatureExtractor
 import timm
 from networks import *
+import socket
 
 IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
@@ -63,10 +64,14 @@ class DensePure_Certify(nn.Module):
 
         # diffusion model
         print(f'diffusion_type: {args.diffusion_type}')
+        hostname = socket.gethostbyname(socket.getfqdn())
         if args.diffusion_type == 'guided-ddpm':
             self.runner = GuidedDiffusion(args, config, device=config.device)
         elif args.diffusion_type == 'ddpm':
-            self.runner = Diffusion(args, config, path=PRETRAINED_CIFAR10_PATH, device=config.device)
+            if 'Jarvis' in hostname:
+                self.runner = Diffusion(args, config, path=PRETRAINED_CIFAR10_PATH, device=config.device)
+            else:
+                self.runner = Diffusion(args, config, path="pretrained/cifar10_uncond_50M_500K.pt", device=config.device)
         else:
             raise NotImplementedError('unknown diffusion type')
 

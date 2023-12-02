@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader, Dataset
 
 
 def load_data(
-    *, data_dir, batch_size, image_size, class_cond=False, deterministic=False
+    *, data_dir, unlearn_class, batch_size, image_size, class_cond=False, deterministic=False
 ):
     """
     For a dataset, create a generator over (images, kwargs) pairs.
@@ -26,7 +26,8 @@ def load_data(
     """
     if not data_dir:
         raise ValueError("unspecified data directory")
-    all_files = _list_image_files_recursively(data_dir)
+    all_files = _list_image_files_recursively(data_dir, unlearn_class)
+    print("Number of training files : {0} ".format(len(all_files)))
     classes = None
     if class_cond:
         # Assume classes are the first part of the filename,
@@ -53,15 +54,16 @@ def load_data(
         yield from loader
 
 
-def _list_image_files_recursively(data_dir):
+def _list_image_files_recursively(data_dir, unlearn_class):
     results = []
     for entry in sorted(bf.listdir(data_dir)):
         full_path = bf.join(data_dir, entry)
         ext = entry.split(".")[-1]
         if "." in entry and ext.lower() in ["jpg", "jpeg", "png", "gif"]:
-            results.append(full_path)
+            if unlearn_class in entry:
+                results.append(full_path)
         elif bf.isdir(full_path):
-            results.extend(_list_image_files_recursively(full_path))
+            results.extend(_list_image_files_recursively(full_path, unlearn_class))
     return results
 
 
