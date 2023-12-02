@@ -10,9 +10,10 @@ from torchvision import transforms, datasets
 from torchvision.datasets.utils import check_integrity
 from typing import *
 from zipdata import ZipData
+from attacks.dataset import AttackDataset
 
 IMAGENET_DIR = "/home/datasets/imagenet"
-
+ATTACKS_DATASET_CIFAR_DIRECTORY = "/Users/jmuneton/Documents/stanford_2023/Classes/cs236/cs236proj/datasets/cifar-10"
 # list of all datasets
 DATASETS = ["imagenet", "imagenet32", "cifar10"]
 CIFAR10_DATASET_PATH = '/media/nipunagarwala/cs236_project_data/dataset/'
@@ -28,7 +29,16 @@ def get_dataset(dataset: str, split: str) -> Dataset:
     elif dataset == "cifar10":
         return _cifar10(split)
 
+def get_dataset_adv_cifar(attack, num_classes=10):
+    path_file = os.path.join(ATTACKS_DATASET_CIFAR_DIRECTORY, f'{attack}.hdf5')
+    dataset_adv = AttackDataset(path_file, indexes=None, 
+                                    n_classes=num_classes, 
+                                    x_original_key='x', 
+                                    x_adv_key='x_adv', 
+                                    labels_key='y',
+                                    rescale=False)
 
+    return dataset_adv
 def get_num_classes(dataset: str):
     """Return the number of classes in the dataset. """
     if dataset == "imagenet":
@@ -356,3 +366,5 @@ class MultiDatasetsDataLoader(object):
     @property
     def num_tasks(self):
         return len(self.task_data_iters)
+    
+

@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from core import Smooth
-from datasets import get_dataset, DATASETS, get_num_classes, get_normalize_layer
+from datasets import get_dataset, get_dataset_adv_cifar, DATASETS, get_num_classes, get_normalize_layer
 import utils
 from utils import str2bool, get_accuracy, get_image_classifier_certified, load_data
 from runners.diffpure_ddpm_densepure import Diffusion
@@ -25,6 +25,7 @@ from networks import *
 IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
 PRETRAINED_CIFAR10_PATH = '/media/nipunagarwala/cs236_project_data/models/cifar10_uncond_50M_500K.pt' #"pretrained/cifar10_uncond_50M_500K.pt"
+
 
 class DensePure_Certify(nn.Module):
     def __init__(self, args, config):
@@ -398,7 +399,10 @@ def robustness_eval(args, config):
     model = model.eval().to(config.device)
 
     # load dataset
-    dataset = get_dataset(args.domain, 'test')
+    if args.adversarial:
+        dataset= get_dataset_adv_cifar(args.attack)
+    else:
+        dataset = get_dataset(args.domain, 'test')
 
     # eval classifier and sde_adv against attacks
     if args.certify_mode == 'both':
@@ -455,6 +459,12 @@ def parse_args_and_config():
     parser.add_argument('--t_plus', type=int, default=0, help='perturbation of t')
     parser.add_argument('--t_total', type=int, default=4000, help='total t to reduce reverse t')
     parser.add_argument('--save_info', action='store_true', help='whether to save image logits')
+    parser.add_argument('--attack', type=str, default='deep_fool')
+    parser.add_argument('--adversarial', dest='adversarial', action='store_true',
+                    help='Set the flag value to True.')
+    parser.add_argument('--no-adversarial', dest='adversarial', action='store_false',
+                    help='Set the flag value to False.')
+    parser.set_defaults(adversarial=False)  
 
     # beta version param
     parser.add_argument('--use_clustering', action='store_true', help='whether to use clustering when purifying')

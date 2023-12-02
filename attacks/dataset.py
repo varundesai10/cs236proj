@@ -100,13 +100,13 @@ class AttackDataset(Dataset):
             x = self._rescale(x)
             x_adv = self._rescale(x_adv)
         y = self.labels[index]
-
         if np.ndim(y) < 2:
             y = np.eye(self.n_classes)[y]
-
+            
         x = torch.from_numpy(x).float()
         x_adv = torch.from_numpy(x_adv).float()
         y = torch.from_numpy(y).float()
+   
         return x, x_adv, y
 
     def get_length_and_shape(self):

@@ -2,9 +2,19 @@ import yaml
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
 
+import random
 import os
 from datetime import datetime
+
+
+def seed_init_fn(x):
+   seed = 943 + x
+   np.random.seed(seed)
+   random.seed(seed)
+   torch.manual_seed(seed)
+   return
 
 def load_yaml_file(file_path):
     with open(file_path, 'r') as file:
@@ -17,6 +27,7 @@ def load_yaml_file(file_path):
         
 def save_attack_samples(directory_path, attack_name, x, x_adv, y):
     file_name = os.path.join(directory_path, attack_name)
+    print("saving samples shape: ", y.shape)
     if '.hdf5' not in file_name:
         file_name += '.hdf5'
     with h5py.File(file_name, 'w') as f:

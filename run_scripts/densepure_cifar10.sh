@@ -15,7 +15,7 @@ python eval_certified_densepure.py \
 --lp_norm L2 \
 --outfile results/cifar10-densepure-sample_num_100000-noise_$sigma-$steps-steps-$reverse_seed \
 --sigma $sigma \
---N 100000 \
+--N 500 \
 --N0 100 \
 --certified_batch 100 \
 --sample_id $(seq -s ' ' 0 20 9980) \

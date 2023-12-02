@@ -41,7 +41,7 @@ def instantiate_fsgm_attack(clf,  norm: Union[int, float,str]='inf',
     att = FastGradientMethod(clf, norm, eps, eps_step, targeted, num_random_init, batch_size)
     return att
 
-def instantiate_pgm_attack(clf, norm: Union[int,float,str] = 'inf', 
+def instantiate_pgd_attack(clf, norm: Union[int,float,str] = 'inf', 
                 eps: Union[int, float, np.ndarray] = 0.3, 
                 eps_step: Union[int, float, np.ndarray] = 0.1, 
                 decay: Union[float, None] = None, max_iter: int = 100, 
@@ -98,7 +98,7 @@ ATTACKS = {'carlini_l2': instantiate_carlini_l2_attack,
            'boundary': instantiate_boundary_attack,
            'fsgm': instantiate_fsgm_attack,
            'deep_fool': instantiate_deep_fool_attack,
-           'pgm': instantiate_pgm_attack,
+           'pgd': instantiate_pgd_attack,
            'jsma': instantiate_jsma_attack,
            'virtual_adv': instantiate_virtual_adv_attack,
            'wasserstein': instantiate_wasserstein_attack,
