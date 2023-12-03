@@ -54,10 +54,11 @@ def compute_jensen_shannon_distance(y, y_pred, y_adv,
 
 def compute_kl_div(y, y_pred, y_pred_adv, clf_log_softmax: bool, 
                    log_target: bool=False):
+    y_pred = F.softmax(y_pred, dim=1)
+    y_pred_adv = F.softmax(y_pred_adv, dim=1)
     if not clf_log_softmax:
         y_pred = torch.log(y_pred)
         y_pred_adv =  torch.log(y_pred_adv)
-
     kl_loss = nn.KLDivLoss(reduction='mean', log_target=log_target)
     kl_x = kl_loss(y_pred, y)
     kl_x_adv = kl_loss(y_pred_adv, y)
