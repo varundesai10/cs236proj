@@ -10,7 +10,7 @@ from torchvision import transforms, datasets
 from torchvision.datasets.utils import check_integrity
 from typing import *
 from zipdata import ZipData
-from attacks.dataset import AttackDataset
+from attack_dataset import AttackDataset
 
 IMAGENET_DIR = "/home/datasets/imagenet"
 ATTACKS_DATASET_CIFAR_DIRECTORY = "/Users/jmuneton/Documents/stanford_2023/Classes/cs236/cs236proj/datasets/cifar-10"

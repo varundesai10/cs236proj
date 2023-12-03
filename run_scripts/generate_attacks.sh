@@ -1,4 +1,4 @@
-cd ../attacks
+cd ..
 pwd
 NUM_SAMPLES=1000
 DATASET="cifar"
