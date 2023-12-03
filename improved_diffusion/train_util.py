@@ -7,7 +7,7 @@ import numpy as np
 import torch as th
 import torch.distributed as dist
 from torch.nn.parallel.distributed import DistributedDataParallel as DDP
-from torch.optim import AdamW
+from torch.optim import AdamW, LBFGS
 
 from . import dist_util, logger
 from .fp16_util import (
@@ -45,6 +45,8 @@ class TrainLoop:
         schedule_sampler=None,
         weight_decay=0.0,
         lr_anneal_steps=0,
+        do_unlearning=False,
+        use_hessian=False
     ):
         self.model = model
         self.diffusion = diffusion
@@ -74,12 +76,20 @@ class TrainLoop:
         self.master_params = self.model_params
         self.lg_loss_scale = INITIAL_LOG_LOSS_SCALE
         self.sync_cuda = th.cuda.is_available()
+        self.do_unlearning = do_unlearning
+        self.use_hessian = use_hessian
 
         self._load_and_sync_parameters()
         if self.use_fp16:
             self._setup_fp16()
 
-        self.opt = AdamW(self.master_params, lr=self.lr, weight_decay=self.weight_decay)
+        if self.do_unlearning and self.use_hessian:
+            lbfgs = LBFGS(self.master_params,
+                    history_size=10, 
+                    max_iter=4, 
+                    line_search_fn="strong_wolfe")
+        else:
+            self.opt = AdamW(self.master_params, lr=self.lr, weight_decay=self.weight_decay)
         if self.resume_step:
             self._load_optimizer_state()
             # Model was resumed, either due to a restart or a checkpoint
@@ -181,6 +191,8 @@ class TrainLoop:
         self.forward_backward(batch, cond)
         if self.use_fp16:
             self.optimize_fp16()
+        elif self.do_unlearning:
+            self.optimize_unlearning()
         else:
             self.optimize_normal()
         self.log_step()
@@ -215,7 +227,10 @@ class TrainLoop:
                     t, losses["loss"].detach()
                 )
 
-            loss = (losses["loss"] * weights).mean()
+            if self.do_unlearning: #Want to do gradient ascent 
+                loss = -(losses["loss"] * weights).mean()
+            else:
+                loss = (losses["loss"] * weights).mean()
             log_loss_dict(
                 self.diffusion, t, {k: v * weights for k, v in losses.items()}
             )
@@ -248,6 +263,14 @@ class TrainLoop:
         for rate, params in zip(self.ema_rate, self.ema_params):
             update_ema(params, self.master_params, rate=rate)
 
+    def optimize_unlearning(self):
+        self._log_grad_norm()
+        self._anneal_lr()
+        self.opt.step()
+        for rate, params in zip(self.ema_rate, self.ema_params):
+            update_ema(params, self.master_params, rate=rate)
+
+
     def _log_grad_norm(self):
         sqsum = 0.0
         for p in self.master_params:
@@ -274,9 +297,15 @@ class TrainLoop:
             if dist.get_rank() == 0:
                 logger.log(f"saving model {rate}...")
                 if not rate:
-                    filename = f"model{(self.step+self.resume_step):06d}.pt"
+                    if self.use_hessian:
+                        filename = f"hessian_model{(self.step+self.resume_step):06d}.pt"
+                    else:
+                        filename = f"sgd_model{(self.step+self.resume_step):06d}.pt"
                 else:
-                    filename = f"ema_{rate}_{(self.step+self.resume_step):06d}.pt"
+                    if self.use_hessian:
+                        filename = f"hessian_ema_{rate}_{(self.step+self.resume_step):06d}.pt"
+                    else:
+                        filename = f"sgd_ema_{rate}_{(self.step+self.resume_step):06d}.pt"
                 with bf.BlobFile(bf.join(get_blob_logdir(), filename), "wb") as f:
                     th.save(state_dict, f)
 
@@ -285,11 +314,19 @@ class TrainLoop:
             save_checkpoint(rate, params)
 
         if dist.get_rank() == 0:
-            with bf.BlobFile(
-                bf.join(get_blob_logdir(), f"opt{(self.step+self.resume_step):06d}.pt"),
-                "wb",
-            ) as f:
-                th.save(self.opt.state_dict(), f)
+            if self.use_hessian:
+                with bf.BlobFile(
+                    bf.join(get_blob_logdir(), f"hessian_opt{(self.step+self.resume_step):06d}.pt"),
+                    "wb",
+                ) as f:
+                    th.save(self.opt.state_dict(), f)
+            else:
+                with bf.BlobFile(
+                    bf.join(get_blob_logdir(), f"sgd_opt{(self.step+self.resume_step):06d}.pt"),
+                    "wb",
+                ) as f:
+                    th.save(self.opt.state_dict(), f)
+
 
         dist.barrier()
 

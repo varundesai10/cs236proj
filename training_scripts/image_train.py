@@ -14,14 +14,24 @@ from improved_diffusion.script_util import (
     add_dict_to_argparser,
 )
 from improved_diffusion.train_util import TrainLoop
+import socket
 
 CHECKPOINT_SAVE_PATH = '/media/nipunagarwala/cs236_project_data/models/improved_diffusion_unlearning'
+'''
+Sample command:
+python3 training_scripts/image_train.py --data_dir /media/nipunagarwala/cs236_project_data/dataset/cifar10_improved_diffusion/ --image_size 32 --num_channels 128 --num_res_blocks 3 --learn_sigma True --dropout 0.3 --diffusion_steps 4000 --noise_schedule cosine --lr 1e-4 --batch_size 128 --resume_checkpoint  /media/nipunagarwala/cs236_project_data/models/cifar10_uncond_50M_500K.pt --unlearn_class dog --save_interval 500 --use_hessian true
+'''
 
 def main():
+    hostname = socket.gethostbyname(socket.getfqdn())
     args = create_argparser().parse_args()
 
     dist_util.setup_dist()
-    logger.configure(dir=CHECKPOINT_SAVE_PATH)
+
+    if 'Jarvis' in hostname:
+        logger.configure(dir=CHECKPOINT_SAVE_PATH)
+    else:
+        logger.configure()
 
     logger.log("creating model and diffusion...")
     model, diffusion = create_model_and_diffusion(
@@ -33,6 +43,7 @@ def main():
     logger.log("creating data loader...")
     data = load_data(
         data_dir=args.data_dir,
+        unlearn_class=args.unlearn_class,
         batch_size=args.batch_size,
         image_size=args.image_size,
         class_cond=args.class_cond,
@@ -55,12 +66,17 @@ def main():
         schedule_sampler=schedule_sampler,
         weight_decay=args.weight_decay,
         lr_anneal_steps=args.lr_anneal_steps,
+        do_unlearning=args.do_unlearning,
+        use_hessian=args.use_hessian,
     ).run_loop()
 
 
 def create_argparser():
     defaults = dict(
         data_dir="",
+        unlearn_class="",
+        do_unlearning=False,
+        use_hessian=False,
         schedule_sampler="uniform",
         lr=1e-4,
         weight_decay=0.0,
