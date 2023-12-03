@@ -22,6 +22,7 @@ class AttackDataset(Dataset):
                  x_adv_key,
                  labels_key,
                  rescale=False,
+                 return_original=True,
                  **args):
         """
         Initializer
@@ -65,6 +66,7 @@ class AttackDataset(Dataset):
         self.labels_key = labels_key
         self.n_classes = n_classes
         self.rescale = rescale
+        self.return_original=  return_original
         if indexes is not None:
             self.main_indexes = indexes
 
@@ -106,8 +108,10 @@ class AttackDataset(Dataset):
         x = torch.from_numpy(x).float()
         x_adv = torch.from_numpy(x_adv).float()
         y = torch.from_numpy(y).float()
-   
-        return x, x_adv, y
+        if self.return_original:
+            return x, x_adv, y
+        else:
+            return x_adv, y
 
     def get_length_and_shape(self):
         """

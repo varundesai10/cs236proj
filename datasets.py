@@ -36,7 +36,8 @@ def get_dataset_adv_cifar(attack, num_classes=10):
                                     x_original_key='x', 
                                     x_adv_key='x_adv', 
                                     labels_key='y',
-                                    rescale=False)
+                                    rescale=False,
+                                    return_original=False)
 
     return dataset_adv
 def get_num_classes(dataset: str):
