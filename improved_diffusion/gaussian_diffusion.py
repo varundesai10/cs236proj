@@ -195,7 +195,7 @@ class GaussianDiffusion:
         return (
             _extract_into_tensor(self.sqrt_alphas_cumprod, t, x_start.shape) * x_start
             + _extract_into_tensor(self.sqrt_one_minus_alphas_cumprod, t, x_start.shape)
-            * noise
+            * noise.to(device=x_start.device)
         )
 
     def q_posterior_mean_variance(self, x_start, x_t, t):
@@ -857,7 +857,8 @@ def _extract_into_tensor(arr, timesteps, broadcast_shape):
                             dimension equal to the length of timesteps.
     :return: a tensor of shape [batch_size, 1, ...] where the shape has K dims.
     """
-    res = th.from_numpy(arr).to(device=timesteps.device)[timesteps].float()
+    res = th.from_numpy(arr.astype(np.float32))
+    res = res.to(device=timesteps.device)[timesteps.int()]
     while len(res.shape) < len(broadcast_shape):
         res = res[..., None]
     return res.expand(broadcast_shape)

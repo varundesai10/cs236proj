@@ -1,6 +1,5 @@
 from scipy.stats import wasserstein_distance, entropy
 import torch
-from torch import Tensor
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
@@ -22,9 +21,15 @@ def compute_wasserstein(y, y_pred, y_adv, u_weight=None, v_weight=None,
     support = np.arange(10)
     x= []
     x_adv = []
+    y_pred = F.softmax(torch.Tensor(y_pred), dim=1).numpy()
+    y_adv = F.softmax(torch.Tensor(y_adv), dim=1).numpy()
     for i in range(len(y)):
-        x.append(wasserstein_distance(support, support, u_weights=y[i,:], v_weights=y_pred[i,:]))
-        x_adv.append(wasserstein_distance(support, support,  u_weights=y[i,:], v_weights=y_adv[i,:]))
+ 
+        v_weight_pred = y_pred[i,:]
+        v_weight_adv = y_adv[i,:]
+
+        x.append(wasserstein_distance(support, support, u_weights=y[i,:], v_weights=v_weight_pred))
+        x_adv.append(wasserstein_distance(support, support,  u_weights=y[i,:], v_weights=v_weight_adv))
     x = sum(x)/len(x)
     x_adv = sum(x_adv)/len(x_adv)
     return x, x_adv
@@ -60,6 +65,14 @@ def compute_kl_div(y, y_pred, y_pred_adv, clf_log_softmax: bool,
     x_adv = kl_x_adv.item()
     return x, x_adv
 
+def compute_accuracy(y, y_pred, y_pred_adv):
+    y = torch.argmax(F.softmax(y, -1))
+    y_pred = torch.argmax(F.softmax(y_pred, 1), -1)
+    y_pred_adv = torch.argmax(F.softmax(y_pred_adv,1), -1)
+    x = (y == y_pred).float().mean().item()
+    x_adv =  (y == y_pred_adv).float().mean().item()
+    return x, x_adv
+
 
 def compute_distributional_distances(data_loader, clf, log_target: bool=False, 
                                        clf_log_softmax: bool = False):
@@ -90,7 +103,17 @@ def compute_distributional_distances(data_loader, clf, log_target: bool=False,
     x, x_adv= compute_wasserstein(y, y_pred, y_pred_adv, clf_log_softmax=clf_log_softmax, 
                                   log_target=log_target)
     metrics['wasserstein'] = {'x': x, 'x_adv': x_adv}
+    x, x_adv= compute_accuracy(y, y_pred, y_pred_adv)
+    metrics['acc'] = {'x': x, 'x_adv': x_adv}
     return metrics
+
+def compute_x_metrics(x, x_pred, metrics_dict):
+    
+    mse = F.mse_loss(torch.Tensor(x_pred), torch.Tensor(x), reduction='none').detach().cpu().numpy()
+    mse_avg = F.mse_loss(torch.Tensor(x_pred), torch.Tensor(x)).float().mean().item()
+    metrics_dict['mse'] = mse
+    metrics_dict['mse_avg'] = mse_avg
+
 
     
 

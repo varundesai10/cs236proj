@@ -26,7 +26,7 @@ import socket
 IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
 PRETRAINED_CIFAR10_PATH = '/media/nipunagarwala/cs236_project_data/models/cifar10_uncond_50M_500K.pt' #"pretrained/cifar10_uncond_50M_500K.pt"
-
+ATTACKS_DATASET_CIFAR_DIRECTORY = "/Users/jmuneton/Documents/stanford_2023/Classes/cs236/cs236proj/datasets/cifar-10"
 
 class DensePure_Certify(nn.Module):
     def __init__(self, args, config):
@@ -405,7 +405,7 @@ def robustness_eval(args, config):
 
     # load dataset
     if args.adversarial:
-        dataset= get_dataset_adv_cifar(args.attack)
+        dataset= get_dataset_adv_cifar(args.attack, ATTACKS_DATASET_CIFAR_DIRECTORY)
     else:
         dataset = get_dataset(args.domain, 'test')
 

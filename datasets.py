@@ -13,7 +13,7 @@ from zipdata import ZipData
 from attack_dataset import AttackDataset
 
 IMAGENET_DIR = "/home/datasets/imagenet"
-ATTACKS_DATASET_CIFAR_DIRECTORY = "/Users/jmuneton/Documents/stanford_2023/Classes/cs236/cs236proj/datasets/cifar-10"
+ATTACKS_DATASET_CIFAR_DIRECTORY = "/Users/jmuneton/Documents/stanford_2023/Classes/cs236/cs236proj/datasets/cifar-10/cifar-10_adv"
 # list of all datasets
 DATASETS = ["imagenet", "imagenet32", "cifar10"]
 CIFAR10_DATASET_PATH = '/media/nipunagarwala/cs236_project_data/dataset/'
@@ -29,15 +29,15 @@ def get_dataset(dataset: str, split: str) -> Dataset:
     elif dataset == "cifar10":
         return _cifar10(split)
 
-def get_dataset_adv_cifar(attack, num_classes=10):
-    path_file = os.path.join(ATTACKS_DATASET_CIFAR_DIRECTORY, f'{attack}.hdf5')
+def get_dataset_adv_cifar(attack, path_file, num_classes=10, return_original=False):
+    path_file = os.path.join(path_file, f'{attack}.hdf5')
     dataset_adv = AttackDataset(path_file, indexes=None, 
                                     n_classes=num_classes, 
                                     x_original_key='x', 
                                     x_adv_key='x_adv', 
                                     labels_key='y',
                                     rescale=False,
-                                    return_original=False)
+                                    return_original=return_original)
 
     return dataset_adv
 def get_num_classes(dataset: str):
