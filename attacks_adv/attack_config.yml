@@ -26,7 +26,7 @@ deep_fool:
 
 fsgm:
   norm: 'inf'
-  eps: 0.3
+  eps: 0.15
   eps_step: 0.1
   targeted: false
   num_random_init: 0
@@ -34,7 +34,7 @@ fsgm:
 
 pgd: 
   norm: 'inf'
-  eps: 0.3
+  eps: 0.15
   eps_step: 0.1
   decay: null
   max_iter: 100
@@ -43,7 +43,7 @@ pgd:
   batch_size: 32
 
 jsma: 
-  theta: .7
+  theta: .5
   gamma: 1.0
   batch_size: 64
 
@@ -75,7 +75,7 @@ universal:
   attacker_params: null 
   delta: 0.2
   max_iter: 20 
-  eps: 10.0
+  eps: 5
   norm: 'inf'
   batch_size: 32
   verbose: true

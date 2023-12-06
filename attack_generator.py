@@ -64,7 +64,7 @@ def generate_attacks(model, data, attack_list, num_samples,
     for attack_name in attack_list:
         data_loader = torch.utils.data.DataLoader(data, 
                                             batch_size=batch_size, 
-                                            shuffle=True, 
+                                            shuffle=False, 
                                             drop_last=False)
         attack_name = [attack_name] if isinstance(attack_name, str) else attack_name
         attack_runer = AttackGenerator(clf, target_class=target_class,

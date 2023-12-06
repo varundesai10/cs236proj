@@ -129,7 +129,7 @@ if __name__ == "__main__":
                         required=False, default='./attacks_adv/attack_config.yml')
     parser.add_argument('-n', '--nsamples', type=int, 
                         help='number of samples to generate per attack',
-                        default=64
+                        default=200
                         )
     parser.add_argument('--dir', type=str, 
                         help='directory path to which attacks should be stored',

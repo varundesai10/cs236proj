@@ -67,9 +67,13 @@ def compute_kl_div(y, y_pred, y_pred_adv, clf_log_softmax: bool,
     return x, x_adv
 
 def compute_accuracy(y, y_pred, y_pred_adv):
-    y = torch.argmax(F.softmax(y, -1))
-    y_pred = torch.argmax(F.softmax(y_pred, 1), -1)
-    y_pred_adv = torch.argmax(F.softmax(y_pred_adv,1), -1)
+    y = torch.argmax(y, -1)
+
+    # y_pred = torch.argmax(F.softmax(y_pred, 1), -1)
+    y_pred = torch.argmax(y_pred, -1)
+    
+    # y_pred_adv = torch.argmax(F.softmax(y_pred_adv,1), -1)
+    y_pred_adv = torch.argmax(y_pred_adv,-1)
     x = (y == y_pred).float().mean().item()
     x_adv =  (y == y_pred_adv).float().mean().item()
     return x, x_adv

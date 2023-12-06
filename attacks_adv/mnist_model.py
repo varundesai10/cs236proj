@@ -23,6 +23,6 @@ class Net(nn.Module):
 
 def load_mnist_model():
     model = Net()
-    model.load_state_dict(torch.load("./model.pth"), strict=False)
+    model.load_state_dict(torch.load("/Users/jmuneton/Documents/stanford_2023/Classes/cs236/cs236proj/attacks_adv/model.pth"), strict=False)
     model.eval()
     return model

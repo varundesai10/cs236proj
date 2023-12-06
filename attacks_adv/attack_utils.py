@@ -36,6 +36,17 @@ def save_attack_samples(directory_path, attack_name, x, x_adv, y):
         f.create_dataset('y', data=y)
     return file_name
 
+def save_attack_samples_diff(directory_path, attack_name, x, x_adv, x_diff, diffused):
+    os.makedirs(os.path.join(directory_path, "data"), exist_ok=True)
+    file_name = os.path.join(directory_path, "data", f'{attack_name}_{diffused}')
+    if '.hdf5' not in file_name:
+        file_name += '.hdf5'
+    with h5py.File(file_name, 'w') as f:
+        f.create_dataset('x', data=x)
+        f.create_dataset('x_adv', data=x_adv)
+        f.create_dataset('x_diff', data=x_diff)
+
+
 def get_timestamp_id():
     current_datetime = datetime.now()
     timestamp = current_datetime.timestamp()
@@ -70,13 +81,13 @@ def create_and_store_results(file_path, file_name, metrics: dict, attack_name, n
     else: 
         header = []
     with open(file_path, 'a') as file:
-        file.write('\t'.join(header) + '\n')
+        file.write(','.join(header) + '\n')
         for key in metrics:
             row = [attack_name, key, 
                    float("{:.5f}".format(metrics[key]['x'])),
                    float("{:.5f}".format(metrics[key]['x_adv'])), num_samples, 
                     dataset]
-            file.write('\t'.join(map(str, row)) + '\n')
+            file.write(','.join(map(str, row)) + '\n')
 
 
 def plot_samples(clean_samples, adversarial_samples, title, save_path):
@@ -104,3 +115,54 @@ def plot_samples(clean_samples, adversarial_samples, title, save_path):
     
     plt.savefig(save_path)
 
+def plot_samples_across(x, x_adv, x_diff, x_sgd, x_hess, attack_name, path):
+    np.random.seed(0)
+    idx = np.random.choice(len(x), 4)
+    fig, axes = plt.subplots(4, 5, figsize=(8, 8))
+    fig.suptitle('Images Under Diffusion Conditions', fontsize=14)
+    
+    # Plot each image
+    for i in range(4):
+        axes[i, 0].imshow(np.transpose(x[idx[i]],(1,2,0)) , cmap='gray')
+        axes[i, 1].imshow(np.transpose(x_adv[idx[i]], (1,2,0)), cmap='gray')
+        axes[i, 2].imshow(np.transpose(x_diff[idx[i]], (1,2,0)), cmap='gray')
+        axes[i, 3].imshow(np.transpose(x_sgd[idx[i]], (1,2,0)), cmap='gray')
+        axes[i, 4].imshow(np.transpose(x_hess[idx[i]], (1,2,0)), cmap='gray')
+        if i <1:
+            axes[i, 0].set_title(f'X_0')
+            axes[i, 1].set_title(f'X_adv')
+            axes[i, 2].set_title(f'X_diff')
+            axes[i, 3].set_title(f'X_diff_gd')
+            axes[i, 4].set_title(f'X_diff_hess')
+        
+        for j in range(5):
+            axes[i, j].set_axis_off()
+
+    # Adjust layout for better spacing
+    plt.tight_layout()
+    # Save the figure as an image file (e.g., PNG)
+    plt.savefig(os.path.join(path, f'{attack_name}.png'))
+
+
+def create_and_store_eval_results(file_path, file_name, metrics_adv: dict,  metrics_diff, 
+                                  attack_name, unlearning):
+   
+    file_path = os.path.join(file_path, f'{file_name}.txt')
+    if not os.path.exists(file_path):
+        header = ['attack_name', 'unlearning', 'kl_clean', 'kl_adv', 'kl_diff', 
+                  'jsd_clean','jsd_adv', 'jsd_diff', 
+                  'wasserstein_clean', 'wasserstein_adv', 'wasserstein_diff',
+                  'acc_clean', 'acc_adv', 'acc_diff', 'mse_adv', 'mse_diff']
+    else: 
+        header = []
+    with open(file_path, 'a') as file:
+        file.write(','.join(header) + '\n')
+        row = [attack_name, str(unlearning)]
+        for key in metrics_adv:
+            if key not in ['mse', 'mse_avg']:
+                row.append(metrics_adv[key]['x'])
+                row.append(metrics_adv[key]['x_adv'])
+                row.append(metrics_diff[key]['x_adv'])
+        row.append(metrics_adv['mse_avg'])
+        row.append(metrics_diff['mse_avg'])
+        file.write(','.join(map(str, row)) + '\n')

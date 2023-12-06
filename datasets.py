@@ -40,6 +40,7 @@ def get_dataset_adv_cifar(attack, path_file, num_classes=10, return_original=Fal
                                     return_original=return_original)
 
     return dataset_adv
+
 def get_num_classes(dataset: str):
     """Return the number of classes in the dataset. """
     if dataset == "imagenet":
@@ -111,12 +112,6 @@ def _imagenet(split: str) -> Dataset:
             transforms.ToTensor()
         ])
 
-        # subdir = os.path.join(dir, "val")
-        # transform = transforms.Compose([
-        #     transforms.Resize(256),
-        #     transforms.CenterCrop(224),
-        #     transforms.ToTensor()
-        # ])
     return datasets.ImageFolder(subdir, transform)
 
 def _imagenet32(split: str) -> Dataset:

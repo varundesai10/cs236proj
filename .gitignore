@@ -13,6 +13,7 @@ results/
 /cifar10
 /cifar
 .DS_Store
+./attacks_adv/test.ipynb
 
 
 
@@ -69,3 +70,7 @@ docs/_build/
 
 /checkpoints/*
 /loggers/*
+/attacks_adv/output.xlsx
+/attacks_adv/plot_diffused.py
+/attacks_adv/table.txt
+/attacks_adv/test.ipynb

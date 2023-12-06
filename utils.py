@@ -4,10 +4,13 @@ from typing import Any
 import torch
 import torch.nn as nn
 import torchvision.models as models
+import matplotlib.pyplot as plt
+import numpy as np
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 from architectures import get_architecture
 import data
+import os
 
 
 def compute_n_params(model, return_str=True):
@@ -171,3 +174,34 @@ def load_data(args, adv_batch_size):
     print(f'x (min, max): ({x_val.min()}, {x_val.max()})')
 
     return x_val, y_val
+
+
+def plot_samples(x_original, x_adv, x_diff, x_original_diff, attack_name, path, unlearning):
+    # Create a subplot with 1 row and 3 columns
+    fig, axes = plt.subplots(1, 4, figsize=(10, 4))
+    print("i am here")
+    # Plot the first image
+    axes[0].imshow(np.transpose(x_original.squeeze(0), (1,2,0)), cmap='gray')
+    axes[0].set_title('Original')
+
+    axes[1].imshow(np.transpose(x_original_diff.squeeze(0), (1,2,0)), cmap='gray')
+    axes[1].set_title('Original diffused')
+
+    # Plot the second image
+    axes[2].imshow(np.transpose(x_adv.squeeze(0), (1,2,0)), cmap='gray')
+    axes[2].set_title(f'Adversarial {attack_name} ')
+
+    # Plot the third image
+    axes[3].imshow(np.transpose(x_diff.squeeze(0), (1,2,0)), cmap='gray')
+    axes[3].set_title(f'Adversarial {attack_name} Diffused')
+    
+    plt.suptitle(f'Unlearning type: {unlearning}', fontsize=16)
+    # Adjust layout for better spacing
+    axes[0].set_axis_off()
+    axes[1].set_axis_off()
+    axes[2].set_axis_off()
+    axes[3].set_axis_off()
+    plt.tight_layout()
+    print(path)
+    os.makedirs(os.path.join(path, 'sample_images'), exist_ok=True)
+    plt.savefig(os.path.join(path, 'sample_images', f'{attack_name}_{unlearning}.png'))
