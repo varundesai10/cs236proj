@@ -27,7 +27,6 @@ def load_yaml_file(file_path):
         
 def save_attack_samples(directory_path, attack_name, x, x_adv, y):
     file_name = os.path.join(directory_path, attack_name)
-    print("saving samples shape: ", y.shape)
     if '.hdf5' not in file_name:
         file_name += '.hdf5'
     with h5py.File(file_name, 'w') as f:
@@ -115,11 +114,11 @@ def plot_samples(clean_samples, adversarial_samples, title, save_path):
     
     plt.savefig(save_path)
 
-def plot_samples_across(x, x_adv, x_diff, x_sgd, x_hess, attack_name, path):
-    np.random.seed(0)
+def plot_samples_across(x, x_adv, x_diff, x_sgd, x_hess, attack_name, path, seed=43):
+    np.random.seed(seed)
     idx = np.random.choice(len(x), 4)
     fig, axes = plt.subplots(4, 5, figsize=(8, 8))
-    fig.suptitle('Images Under Diffusion Conditions', fontsize=14)
+    fig.suptitle(f'{attack_name} Images Under Diffusion Conditions', fontsize=14)
     
     # Plot each image
     for i in range(4):

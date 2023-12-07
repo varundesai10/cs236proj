@@ -24,7 +24,7 @@ from utils import plot_samples
 
 DIFFUSION_CHECK_POINTS = "/Users/jmuneton/Documents/stanford_2023/Classes/cs236/cs236proj/checkpoints/diffusion"
 CLF_CHECKPOINT = "/Users/jmuneton/Documents/stanford_2023/Classes/cs236/cs236proj/checkpoints/clf/wide-resnet-28x10.t7"
-
+DATA_DIR = "./datasets/cifar-10/cifar-10_adv_e/"
 def main():
 
     args = create_argparser().parse_args()
@@ -98,7 +98,9 @@ def run_metrics(x, x_pred, y,clf, batch_size=32):
     return metrics_dict
 
     
-def run_diffusion(model, diffusion, data, t, num_samples, store_path, attack_name, unlearning, clip_denoised=True, device='cpu', seed=123):
+def run_diffusion(model, diffusion, data, t, num_samples,
+                   store_path, attack_name, unlearning, 
+                   clip_denoised=True, device='cpu', seed=123):
     x, x_adv, x_diff , y = [], [], [], []
     np.random.seed(seed)
     sample_idx = np.random.choice(num_samples, 1)[0]
@@ -190,7 +192,7 @@ def create_argparser():
         model_path="",
         attack_name = "pgd",
         unlearning="hessian",
-        data_dir="./datasets/cifar-10/cifar-10_adv/",
+        data_dir=DATA_DIR,
         t = 100
     )
 

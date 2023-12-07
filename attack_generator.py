@@ -48,6 +48,7 @@ def generate_attacks(model, data, attack_list, num_samples,
                      dir_path= '../datasets', 
                      batch_size=64, 
                     visualize_samples=True,
+                    all_except=False,
                     device='gpu',
                     **kwargs):
 
@@ -77,12 +78,19 @@ def generate_attacks(model, data, attack_list, num_samples,
         for _, d in enumerate(data_loader):
             x , y = d[0], d[1]
             if target_filter is not None:
-                b = y == target_filter
+                if all_except:
+                    b = y != target_filter
+                else:
+                    b = y == target_filter
                 idx = b.nonzero()
                 x , y = x[idx,:,:,:], y[idx]
                 if len(x)>0:
                     x = x.squeeze(1)
-                    assert torch.unique(y).item() == target_filter
+                    if not all_except:
+                        assert torch.unique(y).item() == target_filter
+                    else:
+                        assert target_filter not in torch.unique(y)
+            
             if len(x) > 0:
                 if attack_name[0] == 'wasserstein':
                     x =  (x + 1) / 2

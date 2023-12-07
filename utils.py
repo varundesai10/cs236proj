@@ -179,7 +179,6 @@ def load_data(args, adv_batch_size):
 def plot_samples(x_original, x_adv, x_diff, x_original_diff, attack_name, path, unlearning):
     # Create a subplot with 1 row and 3 columns
     fig, axes = plt.subplots(1, 4, figsize=(10, 4))
-    print("i am here")
     # Plot the first image
     axes[0].imshow(np.transpose(x_original.squeeze(0), (1,2,0)), cmap='gray')
     axes[0].set_title('Original')
