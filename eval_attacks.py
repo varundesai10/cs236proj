@@ -66,7 +66,10 @@ def main():
                                  return_original=True)
 
     logger.log('Running diffusion')
-    store_path = './datasets/cifar_diffused/'
+    store_path = './datasets/cifar_diffused'
+    if 'adv_e' in DATA_DIR:
+        store_path += '_adv_e'
+    
     os.makedirs(store_path, exist_ok=True)
     x, x_adv, x_diff, y = run_diffusion(model, diffusion, data,
                                         num_samples=args.num_samples, clip_denoised=0, 

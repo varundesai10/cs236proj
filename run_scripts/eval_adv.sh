@@ -1,7 +1,7 @@
 cd ..
 models=("None" "hessian" "sgd")
 attacks=("deep_fool" "pgd" "fsgm" "universal" "boundary")
-numsamples=500
+numsamples=3000
 t=100
 
 for mod in "${models[@]}"
